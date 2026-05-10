@@ -1,231 +1,1116 @@
 ```html
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta charset="UTF-8" />
+<title>Sentinel Ops</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <title>Interna Matutino</title>
+<style>
 
-  <style>
+:root{
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
+--bg:#121212;
+--card:#1E1E1E;
+--accent:#006465;
+--accent2:#00BCD4;
 
-    body{
+--text:#FFFFFF;
+--text2:#B0B0B0;
 
-      background:#f4f7f8;
+--danger:#FF5252;
+--success:#4CAF50;
+--warning:#FFC107;
 
-      font-family:Arial, sans-serif;
+--border:rgba(255,255,255,0.06);
 
-      min-height:100vh;
+}
 
-      display:flex;
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-      justify-content:center;
+body{
 
-      align-items:center;
+font-family:'Inter',sans-serif;
+background:var(--bg);
+color:var(--text);
 
-      color:#003b3f;
+height:100vh;
+overflow:hidden;
 
-      padding:20px;
-    }
+display:flex;
 
-    .contenedor{
+}
 
-      width:450px;
+/* SIDEBAR */
 
-      background:white;
+.sidebar{
 
-      border-radius:24px;
+width:280px;
+background:rgba(30,30,30,0.92);
 
-      padding:35px;
+backdrop-filter:blur(20px);
 
-      box-shadow:
-      0 10px 35px rgba(0,0,0,0.08);
+border-right:1px solid var(--border);
 
-      border:1px solid #dceeee;
-    }
+padding:24px;
 
-    .titulo{
+display:flex;
+flex-direction:column;
 
-      font-size:34px;
+gap:25px;
 
-      font-weight:bold;
+}
 
-      color:#006465;
+.brand{
 
-      margin-bottom:10px;
-    }
+display:flex;
+align-items:center;
+gap:14px;
 
-    .subtitulo{
+}
 
-      color:#6e8b8c;
+.logo{
 
-      line-height:1.5;
+width:52px;
+height:52px;
 
-      margin-bottom:25px;
-    }
+border-radius:16px;
 
-    .estado{
+background:linear-gradient(135deg,var(--accent),var(--accent2));
 
-      background:#ebf8f8;
+display:flex;
+align-items:center;
+justify-content:center;
 
-      border-left:5px solid #00a8a8;
+font-size:24px;
+font-weight:700;
 
-      border-radius:16px;
+box-shadow:0 10px 30px rgba(0,188,212,0.2);
 
-      padding:20px;
+}
 
-      min-height:80px;
+.brand h1{
 
-      display:flex;
+font-size:22px;
 
-      align-items:center;
+}
 
-      font-size:17px;
+.brand span{
 
-      font-weight:500;
-    }
+font-size:13px;
+color:var(--text2);
 
-    .footer{
+}
 
-      margin-top:25px;
+/* MENU */
 
-      text-align:center;
+.menu{
 
-      font-size:13px;
+display:flex;
+flex-direction:column;
+gap:12px;
 
-      color:#7d9899;
-    }
+}
 
-  </style>
+.menu button{
 
+background:transparent;
+border:none;
+
+padding:14px 16px;
+
+border-radius:14px;
+
+display:flex;
+align-items:center;
+gap:14px;
+
+color:var(--text2);
+
+cursor:pointer;
+
+transition:0.25s;
+
+font-size:15px;
+
+}
+
+.menu button:hover{
+
+background:rgba(255,255,255,0.04);
+
+color:white;
+
+transform:translateX(4px);
+
+}
+
+.menu button.active{
+
+background:linear-gradient(135deg,var(--accent),#00484b);
+
+color:white;
+
+box-shadow:0 10px 25px rgba(0,188,212,0.15);
+
+}
+
+/* MAIN */
+
+.main{
+
+flex:1;
+
+display:flex;
+flex-direction:column;
+
+overflow:hidden;
+
+}
+
+/* TOPBAR */
+
+.topbar{
+
+height:78px;
+
+border-bottom:1px solid var(--border);
+
+background:rgba(18,18,18,0.75);
+
+backdrop-filter:blur(14px);
+
+display:flex;
+align-items:center;
+justify-content:space-between;
+
+padding:0 25px;
+
+}
+
+.search{
+
+width:340px;
+height:46px;
+
+background:#1b1b1b;
+
+border-radius:14px;
+
+display:flex;
+align-items:center;
+
+padding:0 18px;
+
+color:var(--text2);
+
+}
+
+.clock{
+
+font-size:28px;
+font-weight:700;
+
+color:var(--accent2);
+
+}
+
+/* CONTENT */
+
+.content{
+
+flex:1;
+
+display:grid;
+
+grid-template-columns: 1.3fr 0.9fr 0.8fr;
+
+gap:18px;
+
+padding:18px;
+
+overflow:hidden;
+
+}
+
+/* CARDS */
+
+.card{
+
+background:rgba(30,30,30,0.95);
+
+border:1px solid var(--border);
+
+border-radius:22px;
+
+padding:18px;
+
+box-shadow:
+0 10px 30px rgba(0,0,0,0.25);
+
+overflow:hidden;
+
+position:relative;
+
+}
+
+.card::before{
+
+content:"";
+
+position:absolute;
+
+top:0;
+left:0;
+
+width:100%;
+height:1px;
+
+background:linear-gradient(
+90deg,
+transparent,
+rgba(0,188,212,0.4),
+transparent
+);
+
+}
+
+.card-title{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+margin-bottom:18px;
+
+}
+
+.card-title h2{
+
+font-size:18px;
+
+}
+
+.badge{
+
+padding:6px 12px;
+
+background:rgba(0,188,212,0.12);
+
+color:var(--accent2);
+
+border-radius:999px;
+
+font-size:12px;
+
+}
+
+/* CHAT */
+
+.chat{
+
+height:100%;
+
+display:flex;
+flex-direction:column;
+
+}
+
+.messages{
+
+flex:1;
+
+overflow:auto;
+
+padding-right:6px;
+
+display:flex;
+flex-direction:column;
+
+gap:14px;
+
+}
+
+.message{
+
+display:flex;
+gap:12px;
+
+animation:fadeIn .3s ease;
+
+}
+
+.avatar{
+
+width:42px;
+height:42px;
+
+border-radius:14px;
+
+background:linear-gradient(135deg,var(--accent),var(--accent2));
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-weight:700;
+
+}
+
+.bubble{
+
+background:#252525;
+
+padding:14px;
+
+border-radius:18px;
+
+max-width:80%;
+
+}
+
+.user{
+
+font-size:14px;
+font-weight:600;
+
+margin-bottom:6px;
+
+color:var(--accent2);
+
+}
+
+.time{
+
+font-size:11px;
+color:var(--text2);
+
+margin-top:8px;
+
+}
+
+.chat-input{
+
+margin-top:16px;
+
+display:flex;
+gap:12px;
+
+}
+
+.chat-input input{
+
+flex:1;
+
+height:52px;
+
+border:none;
+
+outline:none;
+
+background:#252525;
+
+border-radius:16px;
+
+padding:0 18px;
+
+color:white;
+
+font-size:15px;
+
+}
+
+.chat-input button{
+
+width:56px;
+
+border:none;
+
+border-radius:16px;
+
+background:linear-gradient(
+135deg,
+var(--accent),
+var(--accent2)
+);
+
+color:white;
+
+font-size:20px;
+
+cursor:pointer;
+
+transition:0.25s;
+
+}
+
+.chat-input button:hover{
+
+transform:scale(1.05);
+
+}
+
+/* OPERATORS */
+
+.operator{
+
+display:flex;
+align-items:center;
+justify-content:space-between;
+
+padding:14px;
+
+border-radius:16px;
+
+background:#252525;
+
+margin-bottom:12px;
+
+transition:0.25s;
+
+}
+
+.operator:hover{
+
+transform:translateY(-2px);
+
+}
+
+.operator-left{
+
+display:flex;
+align-items:center;
+gap:12px;
+
+}
+
+.status{
+
+width:10px;
+height:10px;
+
+background:var(--success);
+
+border-radius:50%;
+
+box-shadow:0 0 12px var(--success);
+
+}
+
+.rank{
+
+font-size:12px;
+
+padding:5px 10px;
+
+border-radius:999px;
+
+background:rgba(76,175,80,0.15);
+
+color:var(--success);
+
+}
+
+/* TASKS */
+
+.task{
+
+background:#252525;
+
+padding:16px;
+
+border-radius:18px;
+
+margin-bottom:14px;
+
+border-left:4px solid var(--accent2);
+
+}
+
+.task-top{
+
+display:flex;
+justify-content:space-between;
+
+margin-bottom:10px;
+
+}
+
+.priority{
+
+padding:5px 10px;
+
+border-radius:999px;
+
+font-size:12px;
+
+}
+
+.high{
+
+background:rgba(255,82,82,0.15);
+color:var(--danger);
+
+}
+
+.medium{
+
+background:rgba(255,193,7,0.15);
+color:var(--warning);
+
+}
+
+.low{
+
+background:rgba(76,175,80,0.15);
+color:var(--success);
+
+}
+
+/* STATS */
+
+.stat-grid{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:14px;
+
+}
+
+.stat{
+
+background:#252525;
+
+padding:18px;
+
+border-radius:18px;
+
+}
+
+.stat h3{
+
+font-size:32px;
+
+margin-bottom:8px;
+
+color:var(--accent2);
+
+}
+
+/* SCROLL */
+
+::-webkit-scrollbar{
+width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+
+background:#333;
+border-radius:999px;
+
+}
+
+/* ANIMATIONS */
+
+@keyframes fadeIn{
+
+from{
+opacity:0;
+transform:translateY(10px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1200px){
+
+.content{
+
+grid-template-columns:1fr;
+
+overflow:auto;
+
+}
+
+.sidebar{
+
+display:none;
+
+}
+
+body{
+
+overflow:auto;
+
+}
+
+}
+
+</style>
 </head>
 
 <body>
 
-  <div class="contenedor">
+<!-- SIDEBAR -->
 
-    <div class="titulo">
-      Interna Matutino
-    </div>
+<div class="sidebar">
 
-    <div class="subtitulo">
-      GitHub Pages conectado correctamente con Firebase y Firestore.
-    </div>
+<div class="brand">
 
-    <div class="estado" id="estado">
-      Conectando con Firebase...
-    </div>
+<div class="logo">
+S
+</div>
 
-    <div class="footer">
-      mastersonvirtual.github.io
-    </div>
+<div>
+<h1>Sentinel</h1>
+<span>Operational Center</span>
+</div>
 
-  </div>
+</div>
 
+<div class="menu">
 
+<button class="active">🏠 Dashboard</button>
+<button>💬 Chat</button>
+<button>📋 Tareas</button>
+<button>🚨 Novedades</button>
+<button>🏆 Ranking</button>
+<button>📈 Estadísticas</button>
+<button>⚙ Configuración</button>
 
+</div>
 
-  <script type="module">
+</div>
 
-    import { initializeApp }
+<!-- MAIN -->
 
-    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+<div class="main">
 
-    import {
+<!-- TOPBAR -->
 
-      getFirestore,
-      doc,
-      getDoc
+<div class="topbar">
 
-    }
+<div class="search">
+🔎 Buscar operadores, tareas o mensajes...
+</div>
 
-    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+<div class="clock" id="clock">
+00:00:00
+</div>
 
+</div>
 
+<!-- CONTENT -->
 
+<div class="content">
 
+<!-- CHAT -->
 
-    const firebaseConfig = {
+<div class="card chat">
 
-      apiKey: "AIzaSyC7pjDCHeshyyiYrSr422w-huAQEGptPXY",
+<div class="card-title">
 
-      authDomain: "internamatutino.firebaseapp.com",
+<h2>💬 Chat Operativo</h2>
 
-      projectId: "internamatutino",
+<div class="badge">
+11 operadores online
+</div>
 
-      storageBucket: "internamatutino.firebasestorage.app",
+</div>
 
-      messagingSenderId: "99060177629",
+<div class="messages" id="messages">
 
-      appId: "1:99060177629:web:2273c3ea8778678f651934"
+<div class="message">
 
-    };
+<div class="avatar">
+A
+</div>
 
+<div class="bubble">
 
+<div class="user">
+Alfonso — Puesto 1
+</div>
 
+<div>
+Incidente controlado en Zona Norte.
+</div>
 
+<div class="time">
+10:32
+</div>
 
-    const app = initializeApp(firebaseConfig);
+</div>
 
-    const db = getFirestore(app);
+</div>
 
+<div class="message">
 
+<div class="avatar">
+L
+</div>
 
+<div class="bubble">
 
+<div class="user">
+Lucía — Puesto 3
+</div>
 
-    async function cargarDato(){
+<div>
+Derivé el pendiente al técnico de guardia.
+</div>
 
-      try{
+<div class="time">
+10:34
+</div>
 
-        const referencia =
-        doc(db, "mensajes", "prueba");
+</div>
 
-        const documento =
-        await getDoc(referencia);
+</div>
 
+</div>
 
+<div class="chat-input">
 
+<input
+type="text"
+id="messageInput"
+placeholder="Escribir mensaje operativo..."
+>
 
+<button onclick="sendMessage()">
+➤
+</button>
 
-        if(documento.exists()){
+</div>
 
-          const data = documento.data();
+</div>
 
-          document.getElementById("estado").innerHTML =
-          data.texto;
+<!-- TASKS -->
 
-        }else{
+<div>
 
-          document.getElementById("estado").innerHTML =
-          "Firebase conectado correctamente, pero no existe el documento.";
+<div class="card" style="height:50%; margin-bottom:18px;">
 
-        }
+<div class="card-title">
 
-      }catch(error){
+<h2>📋 Tareas Críticas</h2>
 
-        console.error(error);
+<div class="badge">
+5 activas
+</div>
 
-        document.getElementById("estado").innerHTML =
-        "Error conectando Firestore.";
+</div>
 
-      }
+<div class="task">
 
-    }
+<div class="task-top">
 
-    cargarDato();
+<strong>Incidente CCTV</strong>
 
-  </script>
+<div class="priority high">
+CRÍTICA
+</div>
+
+</div>
+
+<div>
+Verificar cámaras offline en Edificio Central.
+</div>
+
+</div>
+
+<div class="task">
+
+<div class="task-top">
+
+<strong>Derivación Técnica</strong>
+
+<div class="priority medium">
+MEDIA
+</div>
+
+</div>
+
+<div>
+Coordinar visita técnica urgente.
+</div>
+
+</div>
+
+<div class="task">
+
+<div class="task-top">
+
+<strong>Reporte Cliente</strong>
+
+<div class="priority low">
+BAJA
+</div>
+
+</div>
+
+<div>
+Enviar actualización operativa.
+</div>
+
+</div>
+
+</div>
+
+<div class="card" style="height:calc(50% - 18px);">
+
+<div class="card-title">
+
+<h2>📈 Estadísticas</h2>
+
+</div>
+
+<div class="stat-grid">
+
+<div class="stat">
+
+<h3>94%</h3>
+
+<span>Resolución</span>
+
+</div>
+
+<div class="stat">
+
+<h3>11</h3>
+
+<span>Online</span>
+
+</div>
+
+<div class="stat">
+
+<h3>152</h3>
+
+<span>Tareas</span>
+
+</div>
+
+<div class="stat">
+
+<h3>8</h3>
+
+<span>Críticas</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- OPERATORS -->
+
+<div class="card">
+
+<div class="card-title">
+
+<h2>🏆 Operadores</h2>
+
+<div class="badge">
+Ranking en vivo
+</div>
+
+</div>
+
+<div class="operator">
+
+<div class="operator-left">
+
+<div class="status"></div>
+
+<div>
+<strong>Martín</strong>
+<div style="font-size:12px;color:#999;">
+Puesto 2
+</div>
+</div>
+
+</div>
+
+<div class="rank">
++245 XP
+</div>
+
+</div>
+
+<div class="operator">
+
+<div class="operator-left">
+
+<div class="status"></div>
+
+<div>
+<strong>Lucía</strong>
+<div style="font-size:12px;color:#999;">
+Puesto 3
+</div>
+</div>
+
+</div>
+
+<div class="rank">
++198 XP
+</div>
+
+</div>
+
+<div class="operator">
+
+<div class="operator-left">
+
+<div class="status"></div>
+
+<div>
+<strong>Alfonso</strong>
+<div style="font-size:12px;color:#999;">
+Puesto 1
+</div>
+</div>
+
+</div>
+
+<div class="rank">
++170 XP
+</div>
+
+</div>
+
+<div class="operator">
+
+<div class="operator-left">
+
+<div class="status"></div>
+
+<div>
+<strong>Camila</strong>
+<div style="font-size:12px;color:#999;">
+Puesto 4
+</div>
+</div>
+
+</div>
+
+<div class="rank">
++144 XP
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* CLOCK */
+
+function updateClock(){
+
+const now = new Date();
+
+const time = now.toLocaleTimeString();
+
+document.getElementById("clock").innerHTML = time;
+
+}
+
+setInterval(updateClock,1000);
+
+updateClock();
+
+/* CHAT */
+
+function sendMessage(){
+
+const input =
+document.getElementById("messageInput");
+
+if(input.value.trim() === "") return;
+
+const container =
+document.getElementById("messages");
+
+const div =
+document.createElement("div");
+
+div.className = "message";
+
+div.innerHTML = `
+
+<div class="avatar">
+T
+</div>
+
+<div class="bubble">
+
+<div class="user">
+Tu Operador — Puesto 7
+</div>
+
+<div>
+${input.value}
+</div>
+
+<div class="time">
+${new Date().toLocaleTimeString([],{
+hour:'2-digit',
+minute:'2-digit'
+})}
+</div>
+
+</div>
+
+`;
+
+container.appendChild(div);
+
+container.scrollTop =
+container.scrollHeight;
+
+input.value = "";
+
+}
+
+/* ENTER SEND */
+
+document
+.getElementById("messageInput")
+.addEventListener("keypress",function(e){
+
+if(e.key === "Enter"){
+
+sendMessage();
+
+}
+
+});
+
+</script>
 
 </body>
-
 </html>
 ```
