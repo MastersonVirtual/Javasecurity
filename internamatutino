@@ -1,74 +1,231 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <title>Interna Matutino</title>
 
   <style>
-    body{
+
+    *{
       margin:0;
-      font-family:Arial;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+
       background:#f4f7f8;
-      color:#003b3f;
+
+      font-family:Arial, sans-serif;
+
+      min-height:100vh;
+
       display:flex;
+
       justify-content:center;
+
       align-items:center;
-      height:100vh;
+
+      color:#003b3f;
+
+      padding:20px;
     }
 
-    .card{
+    .contenedor{
+
+      width:450px;
+
       background:white;
-      width:400px;
-      padding:30px;
-      border-radius:20px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.1);
+
+      border-radius:24px;
+
+      padding:35px;
+
+      box-shadow:
+      0 10px 35px rgba(0,0,0,0.08);
+
+      border:1px solid #dceeee;
     }
 
-    h1{
-      margin-top:0;
+    .titulo{
+
+      font-size:34px;
+
+      font-weight:bold;
+
       color:#006465;
+
+      margin-bottom:10px;
     }
 
-    .status{
-      margin-top:20px;
-      padding:15px;
-      border-radius:12px;
-      background:#e7f5f5;
+    .subtitulo{
+
+      color:#6e8b8c;
+
+      line-height:1.5;
+
+      margin-bottom:25px;
     }
+
+    .estado{
+
+      background:#ebf8f8;
+
+      border-left:5px solid #00a8a8;
+
+      border-radius:16px;
+
+      padding:20px;
+
+      min-height:80px;
+
+      display:flex;
+
+      align-items:center;
+
+      font-size:17px;
+
+      font-weight:500;
+    }
+
+    .footer{
+
+      margin-top:25px;
+
+      text-align:center;
+
+      font-size:13px;
+
+      color:#7d9899;
+    }
+
   </style>
+
 </head>
+
 <body>
 
-<div class="card">
-  <h1>Interna Matutino</h1>
+  <div class="contenedor">
 
-  <p>GitHub + Firebase conectado.</p>
+    <div class="titulo">
+      Interna Matutino
+    </div>
 
-  <div class="status" id="estado">
-    Conectando...
+    <div class="subtitulo">
+      GitHub Pages conectado correctamente con Firebase y Firestore.
+    </div>
+
+    <div class="estado" id="estado">
+      Conectando con Firebase...
+    </div>
+
+    <div class="footer">
+      mastersonvirtual.github.io
+    </div>
+
   </div>
-</div>
 
-<script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
-const firebaseConfig = {
-  apiKey: "PEGAR_APIKEY",
-  authDomain: "internamatutino.firebaseapp.com",
-  projectId: "internamatutino",
-  storageBucket: "internamatutino.appspot.com",
-  messagingSenderId: "PEGAR_ID",
-  appId: "PEGAR_APPID"
-};
 
-const app = initializeApp(firebaseConfig);
+  <script type="module">
 
-document.getElementById("estado").innerHTML =
-"Firebase conectado correctamente";
+    import { initializeApp }
 
-</script>
+    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+    import {
+
+      getFirestore,
+      doc,
+      getDoc
+
+    }
+
+    from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+
+
+
+
+    const firebaseConfig = {
+
+      apiKey: "AIzaSyC7pjDCHeshyyiYrSr422w-huAQEGptPXY",
+
+      authDomain: "internamatutino.firebaseapp.com",
+
+      projectId: "internamatutino",
+
+      storageBucket: "internamatutino.firebasestorage.app",
+
+      messagingSenderId: "99060177629",
+
+      appId: "1:99060177629:web:2273c3ea8778678f651934"
+
+    };
+
+
+
+
+
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app);
+
+
+
+
+
+    async function cargarDato(){
+
+      try{
+
+        const referencia =
+        doc(db, "mensajes", "prueba");
+
+        const documento =
+        await getDoc(referencia);
+
+
+
+
+
+        if(documento.exists()){
+
+          const data = documento.data();
+
+          document.getElementById("estado").innerHTML =
+          data.texto;
+
+        }else{
+
+          document.getElementById("estado").innerHTML =
+          "Firebase conectado correctamente, pero no existe el documento.";
+
+        }
+
+      }catch(error){
+
+        console.error(error);
+
+        document.getElementById("estado").innerHTML =
+        "Error conectando Firestore.";
+
+      }
+
+    }
+
+    cargarDato();
+
+  </script>
 
 </body>
+
 </html>
+```
