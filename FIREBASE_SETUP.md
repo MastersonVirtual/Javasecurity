@@ -1,4 +1,4 @@
-# Configuración Firebase para InternaMatutino
+# Configuración Firebase para Interna Virtual
 
 Esta web guarda los chats en **Cloud Firestore**. No tenés que crear documentos a mano: la app los crea con **ID automático** cuando mandás el primer mensaje.
 
@@ -6,7 +6,7 @@ Esta web guarda los chats en **Cloud Firestore**. No tenés que crear documentos
 
 1. Entrá a <https://console.firebase.google.com/>.
 2. Tocá **Agregar proyecto**.
-3. Nombre del proyecto: `InternaMatutino`.
+3. Nombre del proyecto: `Interna Virtual`.
 4. ID del proyecto: en tus capturas ya aparece como `internamatutino`.
 5. Google Analytics: puede quedar desactivado para esta app.
 6. Tocá **Crear proyecto**.
@@ -14,7 +14,7 @@ Esta web guarda los chats en **Cloud Firestore**. No tenés que crear documentos
 ## 2. Crear la app web
 
 1. Dentro del proyecto, tocá el icono **Web** (`</>`).
-2. Apodo de la app: `InternaMatutino Web`.
+2. Apodo de la app: `Interna Virtual Web`.
 3. Firebase Hosting: activalo solo si vas a publicar desde Firebase Hosting; si la subís por otro lado, no hace falta.
 4. Tocá **Registrar app**.
 5. Copiá el objeto `firebaseConfig` completo que te muestra Firebase. El **Número del proyecto** (`99060177629` en tus capturas) no alcanza: necesitás el objeto de configuración de la app web, especialmente `apiKey`, `projectId` y `appId`.
@@ -34,7 +34,7 @@ const firebaseConfig = window.INTERNAMATUTINO_FIREBASE_CONFIG || {
 };
 ```
 
-> Ya dejé cargado en el código el objeto completo de tu app web `Interna Matutino Web`, incluyendo `apiKey`, `projectId`, `messagingSenderId` y `appId`.
+> Ya dejé cargado en el código el objeto completo de tu app web `Interna Virtual Web`, incluyendo `apiKey`, `projectId`, `messagingSenderId` y `appId`.
 
 ## 4. Crear Firestore Database
 
@@ -65,6 +65,11 @@ service cloud.firestore {
     match /tasks/{taskId} {
       allow read, create, update: if true;
       allow delete: if false;
+    }
+
+    match /qyaItems/{itemId} {
+      allow read, create: if true;
+      allow update, delete: if false;
     }
   }
 }
@@ -125,6 +130,19 @@ Uso: tareas creadas desde la sección tareas o desde un mensaje de chat.
 - **Collection ID:** `tasks`
 - **Document ID:** automático (`Auto ID`)
 
+### `qyaItems`
+
+Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y las crea desde el panel administrador.
+
+- **Collection ID:** `qyaItems`
+- **Document ID:** automático (`Auto ID`)
+- Campos que guarda la app:
+  - `icon` — string
+  - `question` — string
+  - `answer` — string
+  - `createdBy` — string
+  - `createdAtMs` — number
+
 ## 7. Prueba completa
 
 1. Abrí la web.
@@ -134,15 +152,16 @@ Uso: tareas creadas desde la sección tareas o desde un mensaje de chat.
 5. En Firebase Console → **Firestore Database** → **Datos**, debería aparecer la colección `messages` con un documento nuevo.
 6. Volvé a la web, elegí un operador en **Privados** y enviá un mensaje.
 7. En Firestore debería aparecer `privateMessages` con un documento nuevo.
+8. Entrá a **Q&A**, agregá una pregunta con la clave de administrador `3321` y verificá que aparezca la colección `qyaItems`.
 
 ## 8. Si no guarda
 
 Revisá en este orden:
 
 1. Arriba de la web debe decir `Firebase conectado: internamatutino`. Si dice `Firebase sin configurar` o `Firebase SDK no cargó`, todavía no está conectando.
-2. El objeto completo `firebaseConfig` ya quedó cargado en `index.html` con la app web `Interna Matutino Web`.
+2. El objeto completo `firebaseConfig` ya quedó cargado en `index.html` con la app web `Interna Virtual Web`.
 3. Firestore Database está creado, no solo el proyecto Firebase.
-4. Las reglas están publicadas y permiten `create` en `messages` y `privateMessages`.
+4. Las reglas están publicadas y permiten `create` en `messages`, `privateMessages` y `qyaItems`.
 5. La consola del navegador no muestra `Missing or insufficient permissions`.
 6. La consola del navegador no muestra errores de dominio/API key.
 7. Estás mirando el mismo proyecto cuyo `projectId` pegaste en la web.
