@@ -265,6 +265,7 @@ Uso: visitas/recorridas por dirección que puede asignar cualquier operador de c
   - `address` — string
   - `lat` / `lng` — number; la app los completa automáticamente geocodificando la dirección
   - `geocodedAddress` / `geocodeStatus` — resultado de Google Geocoding
+  - `mapHidden` / `closedAtMs` / `closureId` — se completan al cerrar turno para limpiar el mapa activo y conservar la visita sólo en historial
   - `detail` — string
   - `status` — string (`Pendiente de aceptación`, `Pendiente`, `Denegada` o `Finalizada`)
   - `createdBy` / `requestedBy` — string con el operador que asignó la visita
@@ -313,6 +314,7 @@ Uso: resumen de cierre de turno. Se crea cuando el supervisor toca **Finalizar t
   - `photosCount` — number
   - `tasksTotal` / `tasksDone` — number
   - `routeIds` — array de IDs de recorridas incluidas
+  - `taskSnapshots` — resumen de visitas/direcciones incluidas para generar el reporte imprimible/PDF
 
 ### `qyaItems`
 
@@ -354,8 +356,13 @@ Para que la vista tipo panel móvil de supervisores funcione completa no hace fa
 13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Marcar ubicación**. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`.
 14. Cualquier operador puede entrar a **Supervisores**, tocar **Asignar visita de calle**, cargar dirección/detalle y enviarla. Ya no se cargan latitud/longitud a mano: la app usa Google Geocoding para ubicar esa dirección en el mapa. Queda en `fieldTasks` con estado `Pendiente de aceptación`.
 15. El supervisor de calle ve esas visitas, puede **Aceptar visita** o **Denegar**. Si acepta, queda `Pendiente` hasta que llegue y toque **Llegué y realicé visita** con ubicación/foto.
-16. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces; el resumen queda en `fieldShiftClosures` con recorridas, tiempos, distancia, puntos GPS, fotos, tareas y gestiones.
+16. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces dentro del sistema. El resumen queda en `fieldShiftClosures`, las direcciones se limpian del mapa activo con `mapHidden: true`, y desde el historial se puede abrir el reporte para imprimir/guardar como PDF.
 
+
+
+### Si aparece un pin fuera de Uruguay
+
+Si alguna dirección queda marcada cerca de África u otro país, normalmente es porque Google interpretó una dirección incompleta/ambigua o porque quedó guardado un documento viejo de `fieldTasks` con `lat`/`lng` incorrectos. La app ahora valida que las coordenadas estén dentro de Uruguay antes de mostrarlas en el mapa; si una visita vieja sigue mal, editá o borrá sus campos `lat`/`lng` en Firestore para que vuelva a geocodificarse desde `address`.
 
 ### Error `ApiTargetBlockedMapError`
 
