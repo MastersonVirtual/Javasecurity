@@ -110,6 +110,16 @@ service cloud.firestore {
       allow read, create, update: if true;
       allow delete: if false;
     }
+
+    match /fieldEvents/{eventId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+
+    match /fieldShiftClosures/{closureId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
   }
 }
 ```
@@ -127,7 +137,7 @@ Las capturas muestran que creaste un documento en `tasks` con campos vacíos. Es
 - No crees campos vacíos.
 - La app crea el documento con **Auto ID** cuando apretás enviar.
 
-Si querés preparar las colecciones visualmente, como máximo creá la colección con un documento temporal y después borrá ese documento. Pero no es necesario: Firestore crea `messages`, `privateMessages`, `fieldLocations`, `fieldRoutes` y `fieldTasks` automáticamente con el primer envío exitoso o la primera recorrida GPS.
+Si querés preparar las colecciones visualmente, como máximo creá la colección con un documento temporal y después borrá ese documento. Pero no es necesario: Firestore crea `messages`, `privateMessages`, `fieldLocations`, `fieldRoutes`, `fieldTasks`, `fieldEvents` y `fieldShiftClosures` automáticamente con el primer envío exitoso o la primera recorrida GPS.
 
 ## 7. Colecciones que usa la app
 
@@ -262,6 +272,44 @@ Uso: tareas por dirección que crean los líderes para supervisores de calle. Al
   - `completedLat` / `completedLng` — number cuando el celular permite GPS
   - `photos` — array de objetos `{ name, type, url, createdAtMs }`
 
+
+### `fieldEvents`
+
+Uso: historial detallado de cada gestión de calle. Acá quedan inicio/finalización de recorrida, ubicaciones manuales, fotos del lugar, tareas completadas y cierre de turno.
+
+- **Collection ID:** `fieldEvents`
+- **Document ID:** automático (`Auto ID`)
+- Campos que guarda la app:
+  - `type` — string (`start`, `manual`, `point`, `photo`, `task`, `finish`, `shiftClose`)
+  - `supervisor` — string
+  - `shift` — string
+  - `routeId` — string o null
+  - `lat` / `lng` — number cuando hay ubicación
+  - `accuracy` — number o null
+  - `note` — string
+  - `taskId` — string o null
+  - `photo` — objeto `{ name, type, url, createdAtMs }` cuando se adjunta foto
+  - `createdAtMs` — number
+
+### `fieldShiftClosures`
+
+Uso: resumen de cierre de turno. Se crea cuando el supervisor toca **Finalizar turno** y confirma dos veces para evitar cierres accidentales.
+
+- **Collection ID:** `fieldShiftClosures`
+- **Document ID:** automático (`Auto ID`)
+- Campos que guarda la app:
+  - `supervisor` — string
+  - `shift` — string
+  - `closedAtMs` — number
+  - `routesCount` — number
+  - `totalDurationMs` — number
+  - `totalDistanceMeters` — number
+  - `pointsCount` — number
+  - `eventsCount` — number
+  - `photosCount` — number
+  - `tasksTotal` / `tasksDone` — number
+  - `routeIds` — array de IDs de recorridas incluidas
+
 ### `qyaItems`
 
 Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y las crea desde el panel administrador.
@@ -289,8 +337,9 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 10. La presencia se actualiza cada minuto con `lastSeenMs`; en la app se ve verde si está online y rojo si está offline.
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
 12. La API key de Google Maps ya quedó cargada en `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey`; verificá que tenga Maps JavaScript API habilitada y el dominio autorizado.
-13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Enviar ubicación**. En Firestore deberían aparecer `fieldLocations` y `fieldRoutes`.
+13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Marcar ubicación**. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`.
 14. Un líder puede entrar a **Supervisores**, crear una tarea de calle y verla luego como `fieldTasks`.
+15. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces; el resumen queda en `fieldShiftClosures` con recorridas, tiempos, distancia, puntos GPS, fotos, tareas y gestiones.
 
 
 ### Error `ApiTargetBlockedMapError`
@@ -314,7 +363,7 @@ Revisá en este orden:
 1. En la consola del navegador no debe aparecer `Firebase sin configurar` ni `Firebase SDK no cargó`; si aparece, todavía no está conectando.
 2. El objeto completo `firebaseConfig` ya quedó cargado en `index.html` con la app web `Interna Virtual Web`.
 3. Firestore Database está creado, no solo el proyecto Firebase.
-4. Las reglas están publicadas y permiten leer/escribir las colecciones usadas: `users`, `messages`, `privateMessages`, `tasks`, `qyaItems`, `fieldLocations`, `fieldRoutes` y `fieldTasks`.
+4. Las reglas están publicadas y permiten leer/escribir las colecciones usadas: `users`, `messages`, `privateMessages`, `tasks`, `qyaItems`, `fieldLocations`, `fieldRoutes`, `fieldTasks`, `fieldEvents` y `fieldShiftClosures`.
 5. Para el mapa, la clave de Google Maps tiene Maps JavaScript API habilitada, facturación activa y el dominio autorizado.
 5. La consola del navegador no muestra `Missing or insufficient permissions`.
 6. La consola del navegador no muestra errores de dominio/API key.
