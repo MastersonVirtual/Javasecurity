@@ -255,7 +255,7 @@ Uso: inicio y fin de cada recorrida del supervisor para agrupar puntos GPS.
 
 ### `fieldTasks`
 
-Uso: tareas por dirección que crean los líderes para supervisores de calle. Al finalizar, se guarda quién la hizo, fecha/hora, coordenadas y fotos.
+Uso: visitas/recorridas por dirección que puede asignar cualquier operador de cualquier turno al supervisor de calle. Primero quedan en `Pendiente de aceptación`; el supervisor las acepta o deniega. Si las acepta, quedan como visita `Pendiente` hasta que llegue y la realice con ubicación/foto.
 
 - **Collection ID:** `fieldTasks`
 - **Document ID:** automático (`Auto ID`)
@@ -265,8 +265,11 @@ Uso: tareas por dirección que crean los líderes para supervisores de calle. Al
   - `address` — string
   - `lat` / `lng` — number opcional
   - `detail` — string
-  - `status` — string (`Pendiente` o `Finalizada`)
-  - `createdBy` — string
+  - `status` — string (`Pendiente de aceptación`, `Pendiente`, `Denegada` o `Finalizada`)
+  - `createdBy` / `requestedBy` — string con el operador que asignó la visita
+  - `creatorShift` — turno del operador que la creó
+  - `acceptedBy` / `acceptedAtMs` — supervisor y fecha/hora si acepta
+  - `deniedBy` / `deniedAtMs` — supervisor y fecha/hora si deniega
   - `completedBy` — string cuando se finaliza
   - `completedAtMs` — number cuando se finaliza
   - `completedLat` / `completedLng` — number cuando el celular permite GPS
@@ -348,8 +351,9 @@ Para que la vista tipo panel móvil de supervisores funcione completa no hace fa
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
 12. La API key de Google Maps ya quedó cargada en `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey`; verificá que tenga Maps JavaScript API habilitada y el dominio autorizado.
 13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Marcar ubicación**. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`.
-14. Un líder puede entrar a **Supervisores**, crear una tarea de calle y verla luego como `fieldTasks`.
-15. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces; el resumen queda en `fieldShiftClosures` con recorridas, tiempos, distancia, puntos GPS, fotos, tareas y gestiones.
+14. Cualquier operador puede entrar a **Supervisores**, tocar **Asignar visita de calle**, cargar dirección/detalle y enviarla. Queda en `fieldTasks` con estado `Pendiente de aceptación`.
+15. El supervisor de calle ve esas visitas, puede **Aceptar visita** o **Denegar**. Si acepta, queda `Pendiente` hasta que llegue y toque **Llegué y realicé visita** con ubicación/foto.
+16. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces; el resumen queda en `fieldShiftClosures` con recorridas, tiempos, distancia, puntos GPS, fotos, tareas y gestiones.
 
 
 ### Error `ApiTargetBlockedMapError`
