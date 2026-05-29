@@ -115,6 +115,27 @@ Uso: altas/bajas de usuarios y listado de privados. La app lee esta colección p
 
 Para dar de alta: agregá un documento con `active: true`. Para dar de baja: cambiá `active` a `false`. Para armar bolsas de trabajo, cargá `workAreas` con los canales donde participa cada usuario; `General turno` siempre llega a todos.
 
+Usuarios base que la app crea/usa si faltan en Firebase:
+
+- Matias — Puesto 1 — `Atención al cliente`
+- Iracema — Puesto 2 — `Atención al cliente`
+- Justino — Puesto 3 — `Atención al cliente`
+- Pierina — Puesto 4 — `Monitoreo`
+- Lucia — Puesto 5 — `Monitoreo`
+- Mikaela — Puesto 6 — `Atención al cliente`
+- Maily — Puesto 7 — `Atención al cliente`
+- Carvel — Puesto 8 — `Fresh`
+- Valeria — Puesto 9 — `Fresh`
+- Miguel — Puesto 10 — `Atención al cliente`
+- Alexis — Puesto 6 — `Atención al cliente`
+- Alfonso — `Líder de equipos` — todas las bolsas activas
+
+Mapa de puestos por bolsa:
+
+- `Atención al cliente`: Puestos 1, 2, 3, 6, 7 y 10
+- `Fresh`: Puestos 8 y 9
+- `Monitoreo`: Puestos 4 y 5
+
 ### `messages`
 
 Uso: mensajes generales y mensajes de canales (`General turno`, `Fresh`, `Atención al cliente`, `Monitoreo`).
