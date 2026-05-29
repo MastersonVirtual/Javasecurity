@@ -200,15 +200,15 @@ const channels=['General turno','Fresh','Atención al cliente','Monitoreo'];
 // Pegá acá el objeto firebaseConfig de Firebase Console > Configuración del proyecto > Tus apps > Web.
 // También podés definir window.INTERNAMATUTINO_FIREBASE_CONFIG antes de este script si preferís no editar este archivo.
 const firebaseConfig=window.INTERNAMATUTINO_FIREBASE_CONFIG||{
-  apiKey:'',
+  apiKey:'AIzaSyC7pjDCHeshyyiYrSr422w-huAQEGptPXY',
   authDomain:'internamatutino.firebaseapp.com',
   projectId:'internamatutino',
   storageBucket:'internamatutino.firebasestorage.app',
   messagingSenderId:'99060177629',
-  appId:''
+  appId:'1:99060177629:web:2273c3ea8778678f651934'
 };
 let db=null,unsubTasks=null,unsubPrivate=null,unsubMessages=null;
-const hasFirebaseConfig=()=>Boolean(firebaseConfig.projectId);
+const hasFirebaseConfig=()=>Boolean(firebaseConfig.apiKey&&firebaseConfig.projectId&&firebaseConfig.appId);
 const canUseFirestore=()=>Boolean(window.firebase&&((firebase.apps&&firebase.apps.length)||hasFirebaseConfig()));
 const setFirebaseStatus=text=>{state.firebaseStatus=text;const el=$('firebaseStatus');if(el)el.textContent=text;};
 const $=id=>document.getElementById(id);
