@@ -57,6 +57,11 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
     match /privateMessages/{messageId} {
       allow read, create: if true;
       allow update, delete: if false;
@@ -94,6 +99,19 @@ Si querés preparar las colecciones visualmente, como máximo creá la colecció
 
 No las crees a mano salvo que quieras verificar visualmente. La app las crea sola.
 
+### `users`
+
+Uso: altas/bajas de usuarios y listado de privados. La app lee esta colección para armar el selector de login, asignaciones y chats privados.
+
+- **Collection ID:** `users`
+- **Document ID:** puede ser el nombre en minúscula o Auto ID.
+- Campos recomendados:
+  - `name` — string, ejemplo `Lucía`
+  - `post` — string, ejemplo `Puesto 1`
+  - `active` — boolean; `true` aparece en la app, `false` queda dado de baja
+
+Para dar de alta: agregá un documento con `active: true`. Para dar de baja: cambiá `active` a `false`.
+
 ### `messages`
 
 Uso: mensajes generales y mensajes de canales (`General turno`, `Fresh`, `Atención al cliente`, `Monitoreo`).
@@ -106,6 +124,7 @@ Uso: mensajes generales y mensajes de canales (`General turno`, `Fresh`, `Atenci
   - `post` — string
   - `text` — string
   - `important` — boolean
+  - `attachments` — array de objetos `{ name, type, url, createdAtMs }` para imágenes adjuntas o pegadas
   - `createdAtMs` — number
 
 ### `privateMessages`
@@ -121,6 +140,7 @@ Uso: mensajes privados entre operadores.
   - `post` — string
   - `text` — string
   - `important` — boolean
+  - `attachments` — array de objetos `{ name, type, url, createdAtMs }` para imágenes adjuntas o pegadas
   - `createdAtMs` — number
 
 ### `tasks`
@@ -153,6 +173,8 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 6. Volvé a la web, elegí un operador en **Privados** y enviá un mensaje.
 7. En Firestore debería aparecer `privateMessages` con un documento nuevo.
 8. Entrá a **Q&A**, agregá una pregunta con la clave de administrador `3321` y verificá que aparezca la colección `qyaItems`.
+9. Para usuarios, creá o editá documentos en `users`: `active: true` los muestra; `active: false` los da de baja.
+10. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
 
 ## 8. Si no guarda
 
@@ -161,7 +183,7 @@ Revisá en este orden:
 1. Arriba de la web debe decir `Firebase conectado: internamatutino`. Si dice `Firebase sin configurar` o `Firebase SDK no cargó`, todavía no está conectando.
 2. El objeto completo `firebaseConfig` ya quedó cargado en `index.html` con la app web `Interna Virtual Web`.
 3. Firestore Database está creado, no solo el proyecto Firebase.
-4. Las reglas están publicadas y permiten `create` en `messages`, `privateMessages` y `qyaItems`.
+4. Las reglas están publicadas y permiten leer `users` y crear en `messages`, `privateMessages` y `qyaItems`.
 5. La consola del navegador no muestra `Missing or insufficient permissions`.
 6. La consola del navegador no muestra errores de dominio/API key.
 7. Estás mirando el mismo proyecto cuyo `projectId` pegaste en la web.
