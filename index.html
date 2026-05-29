@@ -30,6 +30,104 @@
 .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.filters button,.task .do-btn,.stat-form button,.task-form button{border:1px solid var(--border);background:rgba(255,255,255,.055);color:var(--text);border-radius:12px;padding:8px 10px}.filters button.active,.task .do-btn,.task-form button{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white}.stat-form,.task-form{display:grid;gap:12px}.task-form{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px}.task-form label{display:grid;gap:8px;color:var(--text2);font-size:.86rem;font-weight:800}.task-form label.full,.task-form button{grid-column:1/-1}.stat-form input,.task-form input,.task-form select,.task-form textarea{width:100%;border:1px solid var(--border);outline:0;color:var(--text);background:rgba(255,255,255,.055);border-radius:14px;padding:12px}.task-form textarea{min-height:82px;resize:vertical}.task-form select{color-scheme:dark;background-color:#242424}.task-form select option{background:#242424;color:var(--text)}.task-assignee{color:var(--accent2);font-weight:950}.stat-number{font-size:3rem;font-weight:950;color:var(--accent2);margin:0}.locked-note{border:1px solid var(--border);background:rgba(255,255,255,.045);border-radius:16px;padding:14px;color:var(--text2)}
 .qya-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.qya-card{display:flex;gap:12px;padding:16px;border-radius:18px;background:#f8fbfb;color:#102;border:1px solid rgba(0,100,101,.15);box-shadow:0 10px 24px rgba(0,0,0,.08);transition:.22s ease}.qya-card:hover{transform:translateY(-3px)}.qya-icon{font-size:1.5rem;display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(0,100,101,.12)}.qya-card h3{margin:0 0 8px;color:#006465}.qya-card p{margin:0;color:#274344;line-height:1.55}mark{background:rgba(0,188,212,.25);padding:0 3px;border-radius:4px}
 
+/* Responsive compact layout: keeps chat composer visible on every viewport */
+:root{
+  --radius:clamp(16px,2vw,24px);
+  --shadow:0 16px 46px rgba(0,0,0,.36);
+}
+html,body{height:100%;}
+body{font-size:clamp(13px,1.05vw,15px);}
+.shell{height:100dvh;grid-template-columns:clamp(220px,19vw,268px) minmax(0,1fr);gap:10px;padding:10px;overflow:hidden;}
+.sidebar{padding:14px;}
+.brand{margin-bottom:16px;}
+.nav{gap:6px;}
+.nav button,.logout,.icon-btn,.channel,.ghost{border-radius:14px;padding:10px 12px;}
+.workspace{height:calc(100dvh - 20px);gap:10px;overflow:hidden;}
+.topbar{height:auto;min-height:58px;padding:10px;gap:10px;flex-shrink:0;}
+.search{height:40px;border-radius:14px;}
+.pill,.clock,.mini-user,.icon-btn{height:38px;}
+.content{flex:1;min-height:0;overflow:auto;padding:0 2px 6px;}
+.content.content-chat{overflow:hidden;}
+.card{padding:clamp(12px,1.5vw,18px);}
+.dashboard,.chat-layout,.news-grid,.badges,.settings,.stats-grid{gap:10px;}
+.hero{min-height:150px;}
+.hero h2,.module-hero h2{font-size:clamp(1.55rem,3vw,3rem);}
+.metrics{gap:10px;}
+.metric{min-height:76px;}
+.metric b{font-size:clamp(1.45rem,2.4vw,1.85rem);}
+.panel-xl{min-height:320px;}
+.chat-layout{height:100%;min-height:0;grid-template-columns:minmax(190px,230px) minmax(0,1fr) minmax(240px,300px);}
+.channels,.context{overflow:auto;}
+.chat-main{min-height:0;height:100%;display:flex;flex-direction:column;}
+.chat-title{flex-shrink:0;padding-bottom:10px;gap:10px;}
+.chat-title h2{font-size:clamp(1.15rem,2vw,1.55rem);}
+.messages{flex:1;min-height:0;overflow:auto;padding:12px 4px 12px 0;gap:10px;}
+.message{gap:9px;}
+.bubble{max-width:min(760px,100%);border-radius:16px;padding:11px;}
+.bubble p{line-height:1.45;}
+.meta{flex-wrap:wrap;gap:6px;}
+.composer{flex-shrink:0;border-radius:18px;padding:6px;gap:6px;padding-bottom:max(6px,env(safe-area-inset-bottom));}
+.composer input{min-height:38px;padding:0 4px;}
+.composer button{width:38px;height:38px;border-radius:13px;flex:0 0 auto;}
+.kanban{grid-template-columns:repeat(6,minmax(210px,1fr));gap:10px;}
+.news-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}
+.qya-grid{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));}
+
+@media(max-width:1260px){
+  .shell{grid-template-columns:78px minmax(0,1fr);}
+  .chat-layout{grid-template-columns:minmax(180px,210px) minmax(0,1fr);}
+}
+@media(max-width:860px){
+  body{overflow:hidden;}
+  .shell{display:block;height:100dvh;min-height:0;padding:8px;overflow:hidden;}
+  .workspace{height:calc(100dvh - 16px);min-height:0;}
+  .topbar{min-height:52px;}
+  .search{order:5;flex-basis:100%;height:38px;}
+  .content{padding-bottom:0;}
+  .content.content-chat{overflow:hidden;}
+  .mobile-only{display:flex;}
+  .sidebar{inset:8px auto 8px 8px;width:min(300px,calc(100vw - 16px));}
+  .chat-layout{height:100%;display:flex;flex-direction:column;min-height:0;gap:8px;}
+  .channels{order:0;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:10px;min-height:auto;flex:0 0 auto;scroll-snap-type:x proximity;}
+  .channels .panel-head{display:none;}
+  .channel{min-width:185px;scroll-snap-align:start;}
+  .chat-main{flex:1 1 auto;min-height:0;padding:12px;}
+  .chat-title{padding-bottom:8px;}
+  .chat-title span,.chat-tools{display:none;}
+  .messages{padding:10px 2px 10px 0;}
+  .composer{position:sticky;bottom:0;background:rgba(31,31,31,.96);backdrop-filter:blur(16px);}
+  .dashboard,.news-grid,.ranking-page,.badges,.settings,.stats-grid{grid-template-columns:1fr;}
+  .hero,.metrics,.panel-xl,.panel-md,.panel-side,.panel-wide{grid-column:span 1;}
+  .panel-xl{min-height:260px;}
+}
+@media(max-width:520px){
+  body{font-size:13px;}
+  .shell{padding:6px;}
+  .workspace{height:calc(100dvh - 12px);gap:8px;}
+  .topbar{padding:8px;border-radius:18px;gap:8px;}
+  .card{padding:10px;border-radius:18px;}
+  .brand-mark,.logo-xl{width:46px;height:46px;border-radius:16px;}
+  .avatar{width:34px;height:34px;border-radius:12px;}
+  .channel{min-width:160px;padding:9px 10px;}
+  .chat-main{padding:10px;}
+  .chat-title h2{font-size:1.05rem;}
+  .message{gap:7px;}
+  .bubble{padding:9px;border-radius:14px;}
+  .msg-actions{gap:8px;}
+  .composer button{width:36px;height:36px;}
+  .login-screen{padding:12px;}
+  .login-card{padding:18px;border-radius:22px;gap:14px;}
+  .login-card h1{font-size:clamp(2.2rem,14vw,3.2rem);}
+}
+@media(max-height:640px){
+  .topbar{min-height:48px;padding:8px;}
+  .search{height:36px;}
+  .chat-title{padding-bottom:6px;}
+  .messages{padding-block:8px;}
+  .composer input{min-height:34px;}
+  .composer button{width:34px;height:34px;}
+}
+
 </style>
 </head>
 <body>
@@ -131,7 +229,7 @@ function populateLogin(){const op=$('operatorSelect'),po=$('postSelect');op.inne
 function updateSeat(){const post=$('postSelect').value.replace(' · ocupado',''),locked=occupied().includes(post);$('seatStatus').className=`seat-status ${locked?'danger':''}`;$('seatStatus').textContent=locked?'⛔ Puesto ocupado en vivo. Seleccioná otro.':'Puesto disponible';$('loginButton').disabled=locked;}
 function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden');state.operators=state.operators.map(o=>o.name===state.session.operator?{...o,post:state.session.post,online:true}:o);$('sessionAvatar').textContent=state.session.avatar;$('sessionName').textContent=state.session.operator;$('sessionPost').textContent=`${state.session.post} · online`;$('miniAvatar').textContent=state.session.avatar;$('miniPost').textContent=state.session.post.replace('Puesto ','P');subscribePrivateMessages();processTaskNotifications();render();}
 function renderNav(){$('nav').innerHTML=navItems.map(([id,ico,label])=>`<button data-page="${id}">${ico}<span>${label}</span><i></i></button>`).join('');$('nav').onclick=e=>{const btn=e.target.closest('button[data-page]');if(!btn)return;state.active=btn.dataset.page;$('sidebar').classList.remove('open');render();};$('logoutBtn').onclick=logout;$('openMenu').onclick=()=>$('sidebar').classList.add('open');$('closeMenu').onclick=()=>$('sidebar').classList.remove('open');}
-function render(){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===state.active));$('onlinePill').textContent=`👥 ${state.operators.filter(o=>o.online).length}/10`;const views={dashboard,chat,tasks,ranking,stats,qya};$('content').innerHTML=views[state.active]();bindPage();renderToasts();renderBell();}
+function render(){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===state.active));$('onlinePill').textContent=`👥 ${state.operators.filter(o=>o.online).length}/10`;const views={dashboard,chat,tasks,ranking,stats,qya};$('content').classList.toggle('content-chat',state.active==='chat');$('content').innerHTML=views[state.active]();bindPage();renderToasts();renderBell();}
 function head(title,action=''){return`<div class="panel-head"><h3>${title}</h3>${action}</div>`}
 function metric(label,value,tone=''){return`<article class="metric card glass ${tone}"><span>${label}</span><b>${value}</b><div class="line"></div></article>`}
 function dashboard(){return`<div class="dashboard"><section class="hero card glass"><div><p class="eyebrow">Turno operativo activo</p><h2>Bienvenido, ${escapeHtml(state.session.operator)}</h2><p class="muted">Vista táctica con chat rápido, tareas pendientes, actividad real del turno y ranking por XP.</p></div><div class="radar">🛡</div></section><section class="metrics">${metric('Operadores online',state.operators.filter(o=>o.online).length,'success')}${metric('Tareas pendientes',pendingTasks().length,'warning')}</section><section class="panel-xl card glass">${head('Chat rápido operativo','<button data-go="chat">Abrir chat ›</button>')}<div class="messages">${chatList(currentMessages().slice(-4),true)}</div></section><section class="panel-md card glass">${head('Agregar tarea al turno')}${taskComposer()}</section><section class="panel-side card glass">${head('Ranking colaborativo')}${rankingList(sortedOperators().slice(0,5))}</section><section class="panel-wide card glass">${head('Tareas disponibles','<button data-go="tasks">Ver todas ›</button>')}${taskStack(pendingTasks().slice(0,6),true)}</section><section class="panel-wide card glass">${head('Actividad del turno')}${timeline(state.activity)}</section></div>`}
