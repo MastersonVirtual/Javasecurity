@@ -45,7 +45,7 @@ En `index.html` podés dejarla configurada antes del script principal o inyectar
 
 ```js
 window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG = {
-  apiKey: 'PEGAR_GOOGLE_MAPS_API_KEY',
+  apiKey: 'AIzaSyC7pjDCHeshyyiYrSr422w-huAQEGptPXY',
   minRouteMeters: 15,
   maxAccuracyMeters: 80
 };
@@ -288,7 +288,7 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 9. Para usuarios, creá o editá documentos en `users`: `active: true` los muestra; `active: false` los da de baja; `workAreas` define si pertenece a `Fresh`, `Monitoreo`, `Atención al cliente` o `Supervisores de Calle`.
 10. La presencia se actualiza cada minuto con `lastSeenMs`; en la app se ve verde si está online y rojo si está offline.
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
-12. Configurá `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey` para ver Google Maps en el módulo **Supervisores**.
+12. La API key de Google Maps ya quedó cargada en `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey`; verificá que tenga Maps JavaScript API habilitada y el dominio autorizado.
 13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Enviar ubicación**. En Firestore deberían aparecer `fieldLocations` y `fieldRoutes`.
 14. Un líder puede entrar a **Supervisores**, crear una tarea de calle y verla luego como `fieldTasks`.
 
