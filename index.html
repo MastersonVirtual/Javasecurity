@@ -196,9 +196,19 @@ const state={
 };
 const navItems=[['dashboard','⌂','Dashboard'],['chat','💬','Chat'],['tasks','▣','Tareas'],['ranking','🏆','Ranking'],['stats','📈','Estadísticas'],['qya','📘','QYA']];
 const channels=['General turno','Fresh','Atención al cliente','Monitoreo'];
-const firebaseConfig=window.INTERNAMATUTINO_FIREBASE_CONFIG||{apiKey:'',authDomain:'',projectId:''};
+// Pegá acá el objeto firebaseConfig de Firebase Console > Configuración del proyecto > Tus apps > Web.
+// También podés definir window.INTERNAMATUTINO_FIREBASE_CONFIG antes de este script si preferís no editar este archivo.
+const firebaseConfig=window.INTERNAMATUTINO_FIREBASE_CONFIG||{
+  apiKey:'',
+  authDomain:'',
+  projectId:'',
+  storageBucket:'',
+  messagingSenderId:'',
+  appId:''
+};
 let db=null,unsubTasks=null,unsubPrivate=null,unsubMessages=null;
-const canUseFirestore=()=>window.firebase&&((firebase.apps&&firebase.apps.length)||(firebaseConfig.apiKey&&firebaseConfig.projectId));
+const hasFirebaseConfig=()=>Boolean(firebaseConfig.apiKey&&firebaseConfig.projectId);
+const canUseFirestore=()=>Boolean(window.firebase&&((firebase.apps&&firebase.apps.length)||hasFirebaseConfig()));
 const $=id=>document.getElementById(id);
 const escapeHtml=s=>String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const time=v=>new Date(v).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
@@ -241,7 +251,7 @@ function taskStack(tasks,actions=false){return`<div class="task-stack">${tasks.m
 async function completeTask(id){const task=state.tasks.find(t=>t.id===id);if(!task||task.status!=='Pendiente')return;const done={status:'Finalizada',completedBy:state.session.operator,completedAt:Date.now()};if(db){await db.collection('tasks').doc(id).update(done)}else{Object.assign(task,done)}const op=state.operators.find(o=>o.name===state.session.operator);if(op){op.xp+=task.xp;op.level=Math.max(1,Math.floor(op.xp/100)+1);op.reputation=Math.min(100,op.reputation+1);}const target=task.operator==='Todos'?'pendiente para todos':`asignada a ${task.operator}`;addActivity(`${state.session.operator} realizó la tarea ${task.title} (${target}) y sumó +${task.xp} XP.`);toast(`Tarea realizada: +${task.xp} XP`);render();}
 function taskComposer(){return`<form class="task-form" id="taskForm"><label>Título<input id="taskTitle" maxlength="60" placeholder="Ej: Validar solicitud Via 21" required></label><label>Asignación<select id="taskAssignee"><option value="Todos">Pendiente para todos</option>${operators.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')}</select></label><label>Categoría<select id="taskCategory">${channels.filter(c=>c!=='General turno').map(c=>`<option>${c}</option>`).join('')}</select></label><label>Prioridad<select id="taskPriority"><option>Media</option><option>Alta</option><option>Crítica</option><option>Baja</option></select></label><label class="full">Descripción<textarea id="taskDescription" maxlength="180" placeholder="Detalle operativo para que cualquier agente pueda tomarla." required></textarea></label><button type="submit">＋ Agregar tarea pendiente</button></form>`}
 async function createTask(){const title=$('taskTitle')?.value.trim(),description=$('taskDescription')?.value.trim();if(!title||!description){toast('Completá título y descripción');return;}const priority=$('taskPriority').value,category=$('taskCategory').value,operator=$('taskAssignee').value,createdAt=Date.now();const xp={Baja:15,Media:25,Alta:35,Crítica:45}[priority]||25;const task={title,description,priority,operator,status:'Pendiente',time:time(createdAt),category,xp,tags:[operator==='Todos'?'Equipo':'Asignada',category],createdBy:state.session.operator,createdAt};try{if(db){await db.collection('tasks').add({...task,createdAtMs:createdAt})}else{state.tasks.unshift({id:crypto.randomUUID(),...task})}}catch(e){console.warn('No se pudo guardar la tarea',e);toast('No se pudo guardar la tarea en Firestore');return;}addActivity(`${state.session.operator} agregó la tarea ${title} ${operator==='Todos'?'pendiente para todos':`asignada a ${operator}`}.`);toast(operator==='Todos'?'Tarea publicada para todos':'Tarea asignada a '+operator);render();}
-function initFirestore(){if(!canUseFirestore())return;try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.firestore();subscribeTasks();subscribeMessages();toast('Firestore conectado para tareas compartidas');}catch(e){console.warn('Firestore no disponible',e);db=null;}}
+function initFirestore(){if(!window.firebase){console.warn('Firebase SDK no cargó. Revisá conexión o scripts de Firebase.');toast('Firebase SDK no cargó: los mensajes quedan solo en esta sesión');return;}if(!canUseFirestore()){console.warn('Firebase no configurado: completá firebaseConfig en index.html o publicá con Firebase Hosting.');toast('Firebase no configurado: completá firebaseConfig para guardar chats');return;}try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.firestore();subscribeTasks();subscribeMessages();toast('Firestore conectado: chats y tareas se guardan en Firebase');}catch(e){console.warn('Firestore no disponible',e);db=null;toast('Firestore no disponible: revisá firebaseConfig y reglas');}}
 function processTaskNotifications(){if(!state.session)return;state.tasks.forEach(t=>{const assigned=t.operator===state.session.operator||t.operator==='Todos';if(t.status==='Pendiente'&&assigned&&!state.seenTaskIds.has(t.id)){state.seenTaskIds.add(t.id);if(t.createdBy!==state.session.operator)notifyBell('task',t.operator==='Todos'?`Nueva tarea para todos: ${t.title}`:`Te asignaron una tarea: ${t.title}`,t.id);}});saveAlertState();}
 function subscribeTasks(){if(!db)return;if(unsubTasks)unsubTasks();unsubTasks=db.collection('tasks').orderBy('createdAtMs','desc').onSnapshot(snapshot=>{state.tasks=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));processTaskNotifications();render();},e=>{console.warn('No se pudieron sincronizar tareas',e);toast('No se pudieron sincronizar tareas con Firestore');});}
 
