@@ -36,7 +36,26 @@ const firebaseConfig = window.INTERNAMATUTINO_FIREBASE_CONFIG || {
 
 > Ya dejé cargado en el código el objeto completo de tu app web `Interna Virtual Web`, incluyendo `apiKey`, `projectId`, `messagingSenderId` y `appId`.
 
-## 4. Crear Firestore Database
+
+## 4. Configurar Google Maps para recorridas
+
+Para que el mapa GPS use Google Maps necesitás una **Google Maps API Key** con **Maps JavaScript API** habilitada y con el dominio de la web autorizado. Esa clave no es la misma que Firebase.
+
+En `index.html` podés dejarla configurada antes del script principal o inyectarla desde el hosting:
+
+```js
+window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG = {
+  apiKey: 'PEGAR_GOOGLE_MAPS_API_KEY',
+  minRouteMeters: 15,
+  maxAccuracyMeters: 80
+};
+```
+
+- `minRouteMeters`: distancia mínima entre puntos automáticos de recorrida. Menos metros = más detalle y más escrituras en Firestore.
+- `maxAccuracyMeters`: descarta puntos automáticos con mala precisión. El botón **Enviar ubicación** guarda igual aunque sea manual.
+- Si no cargás `apiKey`, la app muestra un aviso dentro del mapa y sigue guardando datos de Firestore.
+
+## 5. Crear Firestore Database
 
 1. En Firebase Console, andá a **Compilación / Build** → **Firestore Database**.
 2. Tocá **Crear base de datos**.
@@ -44,7 +63,7 @@ const firebaseConfig = window.INTERNAMATUTINO_FIREBASE_CONFIG || {
 4. Ubicación recomendada: una región cercana, por ejemplo `nam5 (United States)` si no tenés preferencia.
 5. Tocá **Habilitar**.
 
-## 5. Reglas de Firestore para probar
+## 6. Reglas de Firestore para probar
 
 En **Firestore Database** → pestaña **Reglas**, pegá esto para probar sin login Firebase:
 
@@ -110,7 +129,7 @@ Las capturas muestran que creaste un documento en `tasks` con campos vacíos. Es
 
 Si querés preparar las colecciones visualmente, como máximo creá la colección con un documento temporal y después borrá ese documento. Pero no es necesario: Firestore crea `messages`, `privateMessages`, `fieldLocations`, `fieldRoutes` y `fieldTasks` automáticamente con el primer envío exitoso o la primera recorrida GPS.
 
-## 6. Colecciones que usa la app
+## 7. Colecciones que usa la app
 
 No las crees a mano salvo que quieras verificar visualmente. La app las crea sola.
 
@@ -207,6 +226,8 @@ Uso: puntos GPS que registra el supervisor de calle desde el celular. Los líder
   - `lat` — number
   - `lng` — number
   - `accuracy` — number
+  - `heading` — number o null
+  - `speed` — number o null
   - `createdAtMs` — number
 
 ### `fieldRoutes`
@@ -254,7 +275,7 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
   - `createdBy` — string
   - `createdAtMs` — number
 
-## 7. Prueba completa
+## 8. Prueba completa
 
 1. Abrí la web.
 2. Elegí el operador del turno automático y entrá a la central.
@@ -267,10 +288,11 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 9. Para usuarios, creá o editá documentos en `users`: `active: true` los muestra; `active: false` los da de baja; `workAreas` define si pertenece a `Fresh`, `Monitoreo`, `Atención al cliente` o `Supervisores de Calle`.
 10. La presencia se actualiza cada minuto con `lastSeenMs`; en la app se ve verde si está online y rojo si está offline.
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
-12. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Enviar ubicación**. En Firestore deberían aparecer `fieldLocations` y `fieldRoutes`.
-13. Un líder puede entrar a **Supervisores**, crear una tarea de calle y verla luego como `fieldTasks`.
+12. Configurá `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey` para ver Google Maps en el módulo **Supervisores**.
+13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Enviar ubicación**. En Firestore deberían aparecer `fieldLocations` y `fieldRoutes`.
+14. Un líder puede entrar a **Supervisores**, crear una tarea de calle y verla luego como `fieldTasks`.
 
-## 8. Si no guarda
+## 9. Si no guarda
 
 Revisá en este orden:
 
@@ -278,6 +300,7 @@ Revisá en este orden:
 2. El objeto completo `firebaseConfig` ya quedó cargado en `index.html` con la app web `Interna Virtual Web`.
 3. Firestore Database está creado, no solo el proyecto Firebase.
 4. Las reglas están publicadas y permiten leer/escribir las colecciones usadas: `users`, `messages`, `privateMessages`, `tasks`, `qyaItems`, `fieldLocations`, `fieldRoutes` y `fieldTasks`.
+5. Para el mapa, la clave de Google Maps tiene Maps JavaScript API habilitada, facturación activa y el dominio autorizado.
 5. La consola del navegador no muestra `Missing or insufficient permissions`.
 6. La consola del navegador no muestra errores de dominio/API key.
 7. Estás mirando el mismo proyecto cuyo `projectId` pegaste en la web.
