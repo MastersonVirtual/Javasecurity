@@ -263,7 +263,8 @@ Uso: visitas/recorridas por dirección que puede asignar cualquier operador de c
   - `title` — string
   - `assignedTo` — string (`Todos` o nombre del supervisor)
   - `address` — string
-  - `lat` / `lng` — number opcional
+  - `lat` / `lng` — number; la app los completa automáticamente geocodificando la dirección
+  - `geocodedAddress` / `geocodeStatus` — resultado de Google Geocoding
   - `detail` — string
   - `status` — string (`Pendiente de aceptación`, `Pendiente`, `Denegada` o `Finalizada`)
   - `createdBy` / `requestedBy` — string con el operador que asignó la visita
@@ -331,7 +332,7 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 
 Para que la vista tipo panel móvil de supervisores funcione completa no hace falta una clave nueva si ya cargó el mapa. Sí necesitás verificar:
 
-- **Google Maps API key:** ya está cargada en el código. Debe seguir con **Maps JavaScript API** habilitada, facturación activa y dominio autorizado.
+- **Google Maps API key:** ya está cargada en el código. Debe seguir con **Maps JavaScript API** y **Geocoding API** habilitadas, facturación activa y dominio autorizado. Geocoding API es lo que convierte la dirección escrita por el operador en coordenadas para ubicar la visita en el mapa.
 - **Permiso de ubicación del celular:** el supervisor debe aceptar la ubicación del navegador; en producción la web debe abrirse por `https://` para que el GPS funcione correctamente.
 - **Reglas de Firestore:** deben permitir leer/crear `fieldLocations`, `fieldRoutes`, `fieldTasks`, `fieldEvents` y `fieldShiftClosures`, porque ahí se guardan mapa, puntos, fotos, tareas y cierre de turno.
 - **Fotos:** por ahora se guardan como imagen comprimida dentro del documento de Firestore. Si van a subir muchas fotos por día, conviene migrar luego a Firebase Storage.
@@ -351,7 +352,7 @@ Para que la vista tipo panel móvil de supervisores funcione completa no hace fa
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
 12. La API key de Google Maps ya quedó cargada en `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey`; verificá que tenga Maps JavaScript API habilitada y el dominio autorizado.
 13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Marcar ubicación**. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`.
-14. Cualquier operador puede entrar a **Supervisores**, tocar **Asignar visita de calle**, cargar dirección/detalle y enviarla. Queda en `fieldTasks` con estado `Pendiente de aceptación`.
+14. Cualquier operador puede entrar a **Supervisores**, tocar **Asignar visita de calle**, cargar dirección/detalle y enviarla. Ya no se cargan latitud/longitud a mano: la app usa Google Geocoding para ubicar esa dirección en el mapa. Queda en `fieldTasks` con estado `Pendiente de aceptación`.
 15. El supervisor de calle ve esas visitas, puede **Aceptar visita** o **Denegar**. Si acepta, queda `Pendiente` hasta que llegue y toque **Llegué y realicé visita** con ubicación/foto.
 16. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces; el resumen queda en `fieldShiftClosures` con recorridas, tiempos, distancia, puntos GPS, fotos, tareas y gestiones.
 
@@ -378,7 +379,7 @@ Revisá en este orden:
 2. El objeto completo `firebaseConfig` ya quedó cargado en `index.html` con la app web `Interna Virtual Web`.
 3. Firestore Database está creado, no solo el proyecto Firebase.
 4. Las reglas están publicadas y permiten leer/escribir las colecciones usadas: `users`, `messages`, `privateMessages`, `tasks`, `qyaItems`, `fieldLocations`, `fieldRoutes`, `fieldTasks`, `fieldEvents` y `fieldShiftClosures`.
-5. Para el mapa, la clave de Google Maps tiene Maps JavaScript API habilitada, facturación activa y el dominio autorizado.
+5. Para el mapa, la clave de Google Maps tiene Maps JavaScript API y Geocoding API habilitadas, facturación activa y el dominio autorizado.
 5. La consola del navegador no muestra `Missing or insufficient permissions`.
 6. La consola del navegador no muestra errores de dominio/API key.
 7. Estás mirando el mismo proyecto cuyo `projectId` pegaste en la web.
