@@ -76,6 +76,21 @@ service cloud.firestore {
       allow read, create: if true;
       allow update, delete: if false;
     }
+
+    match /fieldLocations/{pointId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+
+    match /fieldRoutes/{routeId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
+
+    match /fieldTasks/{taskId} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
   }
 }
 ```
@@ -93,7 +108,7 @@ Las capturas muestran que creaste un documento en `tasks` con campos vacíos. Es
 - No crees campos vacíos.
 - La app crea el documento con **Auto ID** cuando apretás enviar.
 
-Si querés preparar las colecciones visualmente, como máximo creá la colección con un documento temporal y después borrá ese documento. Pero no es necesario: Firestore crea `messages` y `privateMessages` automáticamente con el primer envío exitoso.
+Si querés preparar las colecciones visualmente, como máximo creá la colección con un documento temporal y después borrá ese documento. Pero no es necesario: Firestore crea `messages`, `privateMessages`, `fieldLocations`, `fieldRoutes` y `fieldTasks` automáticamente con el primer envío exitoso o la primera recorrida GPS.
 
 ## 6. Colecciones que usa la app
 
@@ -109,7 +124,8 @@ Uso: altas/bajas de usuarios y listado de privados. La app lee esta colección p
   - `name` — string, ejemplo `Lucía`
   - `post` — string, ejemplo `Puesto 1`
   - `active` — boolean; `true` aparece en la app, `false` queda dado de baja
-  - `workAreas` — array de strings, ejemplo `["Fresh"]`, `["Monitoreo"]` o `["Atención al cliente"]`
+  - `workAreas` — array de strings, ejemplo `["Fresh"]`, `["Monitoreo"]`, `["Atención al cliente"]` o `["Supervisores de Calle"]`
+  - `role` — string opcional; usar `fieldSupervisor` para supervisores de calle
   - `lastSeenMs` — number actualizado automáticamente por la app cada minuto
   - `currentWorkArea` — string actualizado automáticamente al entrar a un canal
 
@@ -117,7 +133,6 @@ Para dar de alta: agregá un documento con `active: true`. Para dar de baja: cam
 
 Usuarios base que la app crea/usa si faltan en Firebase:
 
-- Matias — Puesto 1 — `Atención al cliente`
 - Iracema — Puesto 2 — `Atención al cliente`
 - Justino — Puesto 3 — `Atención al cliente`
 - Pierina — Puesto 4 — `Monitoreo`
@@ -128,7 +143,10 @@ Usuarios base que la app crea/usa si faltan en Firebase:
 - Valeria — Puesto 9 — `Fresh`
 - Miguel — Puesto 10 — `Atención al cliente`
 - Alexis — Puesto 6 — `Atención al cliente`
-- Alfonso — `Líder de equipos` — todas las bolsas activas
+- Alfonso — `Líder de equipos` — turno Día — todas las bolsas activas
+- Manuel — `Líder de equipos` — turno Tarde — todas las bolsas activas
+- Caroline — `Líder de equipos` — turno Noche — todas las bolsas activas
+- Supervisor de Calle — `Supervisor de calle` — turno Día — `General turno` y `Supervisores de Calle`
 
 Mapa de puestos por bolsa:
 
@@ -138,7 +156,7 @@ Mapa de puestos por bolsa:
 
 ### `messages`
 
-Uso: mensajes generales y mensajes de canales (`General turno`, `Fresh`, `Atención al cliente`, `Monitoreo`).
+Uso: mensajes generales y mensajes de canales (`General turno`, `Fresh`, `Atención al cliente`, `Monitoreo`, `Supervisores de Calle`).
 
 - **Collection ID:** `messages`
 - **Document ID:** automático (`Auto ID`)
@@ -175,6 +193,54 @@ Uso: tareas creadas desde la sección tareas o desde un mensaje de chat.
 - **Collection ID:** `tasks`
 - **Document ID:** automático (`Auto ID`)
 
+
+### `fieldLocations`
+
+Uso: puntos GPS que registra el supervisor de calle desde el celular. Los líderes los ven en el mapa por turno.
+
+- **Collection ID:** `fieldLocations`
+- **Document ID:** automático (`Auto ID`)
+- Campos que guarda la app:
+  - `supervisor` — string
+  - `shift` — string
+  - `routeId` — string o null
+  - `lat` — number
+  - `lng` — number
+  - `accuracy` — number
+  - `createdAtMs` — number
+
+### `fieldRoutes`
+
+Uso: inicio y fin de cada recorrida del supervisor para agrupar puntos GPS.
+
+- **Collection ID:** `fieldRoutes`
+- **Document ID:** automático (`Auto ID`)
+- Campos que guarda la app:
+  - `supervisor` — string
+  - `shift` — string
+  - `status` — string (`En curso` o `Finalizada`)
+  - `startedAtMs` — number
+  - `endedAtMs` — number cuando finaliza
+
+### `fieldTasks`
+
+Uso: tareas por dirección que crean los líderes para supervisores de calle. Al finalizar, se guarda quién la hizo, fecha/hora, coordenadas y fotos.
+
+- **Collection ID:** `fieldTasks`
+- **Document ID:** automático (`Auto ID`)
+- Campos que guarda la app:
+  - `title` — string
+  - `assignedTo` — string (`Todos` o nombre del supervisor)
+  - `address` — string
+  - `lat` / `lng` — number opcional
+  - `detail` — string
+  - `status` — string (`Pendiente` o `Finalizada`)
+  - `createdBy` — string
+  - `completedBy` — string cuando se finaliza
+  - `completedAtMs` — number cuando se finaliza
+  - `completedLat` / `completedLng` — number cuando el celular permite GPS
+  - `photos` — array de objetos `{ name, type, url, createdAtMs }`
+
 ### `qyaItems`
 
 Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y las crea desde el panel administrador.
@@ -191,25 +257,27 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 ## 7. Prueba completa
 
 1. Abrí la web.
-2. Ingresá con clave `Matutino2026`.
+2. Elegí el operador del turno automático y entrá a la central.
 3. Entrá a **Chat**.
 4. Enviá un mensaje en `General turno`.
 5. En Firebase Console → **Firestore Database** → **Datos**, debería aparecer la colección `messages` con un documento nuevo.
 6. Volvé a la web, elegí un operador en **Privados** y enviá un mensaje.
 7. En Firestore debería aparecer `privateMessages` con un documento nuevo.
 8. Entrá a **Q&A**, agregá una pregunta con la clave de administrador `3321` y verificá que aparezca la colección `qyaItems`.
-9. Para usuarios, creá o editá documentos en `users`: `active: true` los muestra; `active: false` los da de baja; `workAreas` define si pertenece a `Fresh`, `Monitoreo` o `Atención al cliente`.
+9. Para usuarios, creá o editá documentos en `users`: `active: true` los muestra; `active: false` los da de baja; `workAreas` define si pertenece a `Fresh`, `Monitoreo`, `Atención al cliente` o `Supervisores de Calle`.
 10. La presencia se actualiza cada minuto con `lastSeenMs`; en la app se ve verde si está online y rojo si está offline.
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
+12. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Enviar ubicación**. En Firestore deberían aparecer `fieldLocations` y `fieldRoutes`.
+13. Un líder puede entrar a **Supervisores**, crear una tarea de calle y verla luego como `fieldTasks`.
 
 ## 8. Si no guarda
 
 Revisá en este orden:
 
-1. Arriba de la web debe decir `Firebase conectado: internamatutino`. Si dice `Firebase sin configurar` o `Firebase SDK no cargó`, todavía no está conectando.
+1. En la consola del navegador no debe aparecer `Firebase sin configurar` ni `Firebase SDK no cargó`; si aparece, todavía no está conectando.
 2. El objeto completo `firebaseConfig` ya quedó cargado en `index.html` con la app web `Interna Virtual Web`.
 3. Firestore Database está creado, no solo el proyecto Firebase.
-4. Las reglas están publicadas y permiten leer `users` y crear en `messages`, `privateMessages` y `qyaItems`.
+4. Las reglas están publicadas y permiten leer/escribir las colecciones usadas: `users`, `messages`, `privateMessages`, `tasks`, `qyaItems`, `fieldLocations`, `fieldRoutes` y `fieldTasks`.
 5. La consola del navegador no muestra `Missing or insufficient permissions`.
 6. La consola del navegador no muestra errores de dominio/API key.
 7. Estás mirando el mismo proyecto cuyo `projectId` pegaste en la web.
