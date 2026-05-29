@@ -323,6 +323,16 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
   - `createdBy` — string
   - `createdAtMs` — number
 
+
+## Permisos y claves para la vista de supervisores
+
+Para que la vista tipo panel móvil de supervisores funcione completa no hace falta una clave nueva si ya cargó el mapa. Sí necesitás verificar:
+
+- **Google Maps API key:** ya está cargada en el código. Debe seguir con **Maps JavaScript API** habilitada, facturación activa y dominio autorizado.
+- **Permiso de ubicación del celular:** el supervisor debe aceptar la ubicación del navegador; en producción la web debe abrirse por `https://` para que el GPS funcione correctamente.
+- **Reglas de Firestore:** deben permitir leer/crear `fieldLocations`, `fieldRoutes`, `fieldTasks`, `fieldEvents` y `fieldShiftClosures`, porque ahí se guardan mapa, puntos, fotos, tareas y cierre de turno.
+- **Fotos:** por ahora se guardan como imagen comprimida dentro del documento de Firestore. Si van a subir muchas fotos por día, conviene migrar luego a Firebase Storage.
+
 ## 8. Prueba completa
 
 1. Abrí la web.
