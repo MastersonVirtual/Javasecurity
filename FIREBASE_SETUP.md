@@ -109,8 +109,11 @@ Uso: altas/bajas de usuarios y listado de privados. La app lee esta colección p
   - `name` — string, ejemplo `Lucía`
   - `post` — string, ejemplo `Puesto 1`
   - `active` — boolean; `true` aparece en la app, `false` queda dado de baja
+  - `workAreas` — array de strings, ejemplo `["Fresh"]`, `["Monitoreo"]` o `["Atención al cliente"]`
+  - `lastSeenMs` — number actualizado automáticamente por la app cada minuto
+  - `currentWorkArea` — string actualizado automáticamente al entrar a un canal
 
-Para dar de alta: agregá un documento con `active: true`. Para dar de baja: cambiá `active` a `false`.
+Para dar de alta: agregá un documento con `active: true`. Para dar de baja: cambiá `active` a `false`. Para armar bolsas de trabajo, cargá `workAreas` con los canales donde participa cada usuario; `General turno` siempre llega a todos.
 
 ### `messages`
 
@@ -120,6 +123,7 @@ Uso: mensajes generales y mensajes de canales (`General turno`, `Fresh`, `Atenci
 - **Document ID:** automático (`Auto ID`)
 - Campos que guarda la app:
   - `channel` — string
+  - `audience` — string; `all` para General o el nombre de la bolsa/canal
   - `operator` — string
   - `post` — string
   - `text` — string
@@ -173,8 +177,9 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 6. Volvé a la web, elegí un operador en **Privados** y enviá un mensaje.
 7. En Firestore debería aparecer `privateMessages` con un documento nuevo.
 8. Entrá a **Q&A**, agregá una pregunta con la clave de administrador `3321` y verificá que aparezca la colección `qyaItems`.
-9. Para usuarios, creá o editá documentos en `users`: `active: true` los muestra; `active: false` los da de baja.
-10. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
+9. Para usuarios, creá o editá documentos en `users`: `active: true` los muestra; `active: false` los da de baja; `workAreas` define si pertenece a `Fresh`, `Monitoreo` o `Atención al cliente`.
+10. La presencia se actualiza cada minuto con `lastSeenMs`; en la app se ve verde si está online y rojo si está offline.
+11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
 
 ## 8. Si no guarda
 
