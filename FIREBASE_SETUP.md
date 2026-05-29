@@ -25,16 +25,16 @@ Buscá el bloque `firebaseConfig` en `index.html` y reemplazá los valores vací
 
 ```js
 const firebaseConfig = window.INTERNAMATUTINO_FIREBASE_CONFIG || {
-  apiKey:'TU_API_KEY',
-  authDomain:'TU_PROJECT_ID.firebaseapp.com',
-  projectId:'TU_PROJECT_ID',
-  storageBucket:'TU_PROJECT_ID.appspot.com',
-  messagingSenderId:'TU_MESSAGING_SENDER_ID',
-  appId:'TU_APP_ID'
+  apiKey:'',
+  authDomain:'internamatutino.firebaseapp.com',
+  projectId:'internamatutino',
+  storageBucket:'internamatutino.firebasestorage.app',
+  messagingSenderId:'99060177629',
+  appId:''
 };
 ```
 
-> Importante: el campo más crítico es `projectId`. Si queda vacío, la app funciona localmente pero **no guarda en Firebase**.
+> Ya dejé cargados en el código los datos visibles de tus capturas: `projectId: internamatutino` y `messagingSenderId: 99060177629`. Si más adelante Firebase te pide API key o App ID, copiá el objeto completo desde **Configuración del proyecto → General → Tus apps → SDK setup and configuration**.
 
 ## 4. Crear Firestore Database
 
@@ -140,7 +140,7 @@ Uso: tareas creadas desde la sección tareas o desde un mensaje de chat.
 Revisá en este orden:
 
 1. Arriba de la web debe decir `Firebase conectado: internamatutino`. Si dice `Firebase sin configurar` o `Firebase SDK no cargó`, todavía no está conectando.
-2. `projectId` no está vacío en `index.html` y vale `internamatutino`.
+2. `projectId` ya quedó cargado en `index.html` con el valor `internamatutino`.
 3. Firestore Database está creado, no solo el proyecto Firebase.
 4. Las reglas están publicadas y permiten `create` en `messages` y `privateMessages`.
 5. La consola del navegador no muestra `Missing or insufficient permissions`.
