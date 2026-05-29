@@ -292,6 +292,21 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Enviar ubicación**. En Firestore deberían aparecer `fieldLocations` y `fieldRoutes`.
 14. Un líder puede entrar a **Supervisores**, crear una tarea de calle y verla luego como `fieldTasks`.
 
+
+### Error `ApiTargetBlockedMapError`
+
+Si la consola muestra `Google Maps JavaScript API error: ApiTargetBlockedMapError`, la ubicación del celular no es el problema: la clave está bloqueada para la API que intenta usar el mapa.
+
+1. Entrá a **Google Cloud Console** → **APIs y servicios** → **Credenciales**.
+2. Abrí la API key cargada en `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey`.
+3. En **Restricciones de API**, elegí una de estas dos opciones:
+   - Para probar rápido: **No restringir clave**.
+   - Para producción: **Restringir clave** y marcar **Maps JavaScript API**.
+4. Verificá que **Maps JavaScript API** esté habilitada en **APIs y servicios** → **Biblioteca**.
+5. Guardá, esperá unos minutos y recargá la web.
+
+Las advertencias de rendimiento o de `google.maps.Marker` no bloquean el mapa; el bloqueo real es `ApiTargetBlockedMapError`.
+
 ## 9. Si no guarda
 
 Revisá en este orden:
