@@ -316,6 +316,19 @@ Uso: resumen de cierre de turno. Se crea cuando el supervisor toca **Finalizar t
   - `routeIds` — array de IDs de recorridas incluidas
   - `taskSnapshots` — resumen de visitas/direcciones incluidas para generar el reporte imprimible/PDF
 
+
+### Flujo correcto de visitas del supervisor
+
+1. Un operador de cualquier puesto entra a **Supervisores** y toca **Asignar visita de calle**.
+2. Carga título, supervisor destino, dirección exacta y observaciones de la tarea.
+3. La visita queda como `Pendiente de aceptación`.
+4. El supervisor de calle la ve en su lista y puede **Aceptar visita** o **Denegar**.
+5. Al aceptar, queda como `Pendiente` dentro de su jornada.
+6. El supervisor elige una visita aceptada y toca **Comenzar esta tarea**; ahí se crea una ruta activa y se carga esa dirección en el mapa.
+7. Cuando llega al lugar toca **Llegué y realicé visita**; el sistema abre una ventana propia para adjuntar foto desde cámara y escribir una observación.
+8. Al guardar, queda `Finalizada` con foto, observación, ubicación, fecha y responsable.
+9. Al cerrar la jornada, se genera el resumen en `fieldShiftClosures`, queda disponible el botón **PDF**, y las tareas/rutas cerradas se limpian del mapa activo con `mapHidden: true`.
+
 ### `qyaItems`
 
 Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y las crea desde el panel administrador.
