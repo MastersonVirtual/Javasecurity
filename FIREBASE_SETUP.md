@@ -53,8 +53,9 @@ window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG = {
 ```
 
 - `minRouteMeters`: distancia mínima entre puntos automáticos de recorrida. Menos metros = más detalle y más escrituras en Firestore.
-- `maxAccuracyMeters`: descarta puntos automáticos con mala precisión. El botón **Enviar ubicación** guarda igual aunque sea manual.
+- `maxAccuracyMeters`: descarta puntos con mala precisión para no dibujar recorridos corridos o poco confiables. Si el celular informa peor precisión, la app avisa que espere mejor señal GPS.
 - `minRouteSeconds`: tiempo mínimo entre puntos automáticos. Esto evita que el GPS escriba cada décima de segundo, que Firestore dispare lecturas constantes y que el chat o el mapa parezcan recargarse todo el tiempo.
+- La tarjeta **Tiempo activo tareas** suma el tiempo desde que una visita fue aceptada/iniciada hasta que se completa; la tarjeta de velocidad promedio se quitó porque no aportaba control confiable en recorridas urbanas con poca distancia.
 - Si no cargás `apiKey`, la app muestra un aviso dentro del mapa y sigue guardando datos de Firestore.
 
 ## 5. Crear Firestore Database
@@ -350,7 +351,7 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 Para que la vista tipo panel móvil de supervisores funcione completa no hace falta una clave nueva si ya cargó el mapa. Sí necesitás verificar:
 
 - **Google Maps API key:** ya está cargada en el código. Debe seguir con **Maps JavaScript API** y **Geocoding API** habilitadas, facturación activa y dominio autorizado. Geocoding API es lo que convierte la dirección escrita por el operador en coordenadas para ubicar la visita en el mapa.
-- **Permiso de ubicación del celular:** el supervisor debe aceptar la ubicación del navegador; en producción la web debe abrirse por `https://` para que el GPS funcione correctamente. La app ahora guarda puntos automáticos como máximo cada `minRouteSeconds` y sólo si se movió al menos `minRouteMeters`, para mantener historial sin refrescar toda la pantalla.
+- **Permiso de ubicación del celular:** el supervisor debe aceptar la ubicación del navegador; en producción la web debe abrirse por `https://` para que el GPS funcione correctamente. La app ahora guarda puntos como máximo cada `minRouteSeconds`, sólo si se movió al menos `minRouteMeters` y sólo con precisión aceptable, para mantener historial sin refrescar toda la pantalla. La precisión final depende del GPS/señal del celular; para pegar el recorrido exactamente a calles se puede evaluar más adelante Google Roads API.
 - **Reglas de Firestore:** deben permitir leer/crear `fieldLocations`, `fieldRoutes`, `fieldTasks`, `fieldEvents` y `fieldShiftClosures`, porque ahí se guardan mapa, puntos, fotos, tareas y cierre de turno.
 - **Fotos:** por ahora se guardan como imagen comprimida dentro del documento de Firestore. Si van a subir muchas fotos por día, conviene migrar luego a Firebase Storage.
 
