@@ -324,9 +324,9 @@ Uso: resumen de cierre de turno. Se crea cuando el supervisor toca **Finalizar t
 
 1. Un operador de cualquier puesto entra a **Supervisores** y toca **Asignar visita de calle**.
 2. Carga título, supervisor destino, dirección exacta y observaciones de la tarea.
-3. La visita queda como `Pendiente de aceptación`.
+3. La visita queda como `Pendiente de aceptación`. En este estado aparece en la lista del supervisor, pero **no se pinea ni se carga en su mapa**.
 4. El supervisor de calle la ve en su lista y puede **Aceptar visita** o **Denegar**.
-5. Al aceptar, queda como `Pendiente` dentro de su jornada.
+5. Al aceptar, queda como `Pendiente` dentro de su jornada y recién ahí puede mostrarse como destino operativo del supervisor.
 6. El supervisor elige una visita aceptada y toca **Comenzar esta tarea**; ahí se crea una ruta activa y se carga esa dirección en el mapa.
 7. Cuando llega al lugar toca **Llegué y realicé visita**; el sistema abre una ventana propia para adjuntar foto desde cámara y escribir una observación.
 8. Al guardar, queda `Finalizada` con foto, observación, ubicación, fecha y responsable.
@@ -369,8 +369,8 @@ Para que la vista tipo panel móvil de supervisores funcione completa no hace fa
 10. La presencia se actualiza cada minuto con `lastSeenMs`; en la app se ve verde si está online y rojo si está offline.
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
 12. La API key de Google Maps ya quedó cargada en `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey`; verificá que tenga Maps JavaScript API habilitada y el dominio autorizado.
-13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Marcar ubicación** o comenzá una visita aceptada. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`. El mapa reutiliza la instancia de Google Maps y actualiza marcadores/ruta sin reconstruir toda la vista.
-14. Cualquier operador puede entrar a **Supervisores**, tocar **Asignar visita de calle**, cargar dirección/detalle y enviarla. Ya no se cargan latitud/longitud a mano: la app usa Google Geocoding para ubicar esa dirección en el mapa. Queda en `fieldTasks` con estado `Pendiente de aceptación`.
+13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Marcar ubicación** o comenzá una visita aceptada. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`. El mapa reutiliza la instancia de Google Maps por usuario/turno y actualiza marcadores/ruta sin reconstruir toda la vista.
+14. Cualquier operador puede entrar a **Supervisores**, tocar **Asignar visita de calle**, cargar dirección/detalle y enviarla. Ya no se cargan latitud/longitud a mano: la app puede geocodificar la dirección, pero mientras queda `Pendiente de aceptación` no se muestra como pin en el mapa del supervisor.
 15. El supervisor de calle ve esas visitas, puede **Aceptar visita** o **Denegar**. Si acepta, queda `Pendiente` hasta que llegue y toque **Llegué y realicé visita** con ubicación/foto.
 16. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces dentro del sistema. El resumen queda en `fieldShiftClosures`, las direcciones se limpian del mapa activo con `mapHidden: true`, y desde el historial se puede abrir el reporte para imprimir/guardar como PDF.
 
