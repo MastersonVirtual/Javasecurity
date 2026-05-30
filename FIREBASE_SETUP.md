@@ -47,12 +47,14 @@ En `index.html` podés dejarla configurada antes del script principal o inyectar
 window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG = {
   apiKey: 'AIzaSyC7pjDCHeshyyiYrSr422w-huAQEGptPXY',
   minRouteMeters: 15,
-  maxAccuracyMeters: 80
+  maxAccuracyMeters: 80,
+  minRouteSeconds: 25
 };
 ```
 
 - `minRouteMeters`: distancia mínima entre puntos automáticos de recorrida. Menos metros = más detalle y más escrituras en Firestore.
 - `maxAccuracyMeters`: descarta puntos automáticos con mala precisión. El botón **Enviar ubicación** guarda igual aunque sea manual.
+- `minRouteSeconds`: tiempo mínimo entre puntos automáticos. Esto evita que el GPS escriba cada décima de segundo, que Firestore dispare lecturas constantes y que el chat o el mapa parezcan recargarse todo el tiempo.
 - Si no cargás `apiKey`, la app muestra un aviso dentro del mapa y sigue guardando datos de Firestore.
 
 ## 5. Crear Firestore Database
@@ -348,7 +350,7 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 Para que la vista tipo panel móvil de supervisores funcione completa no hace falta una clave nueva si ya cargó el mapa. Sí necesitás verificar:
 
 - **Google Maps API key:** ya está cargada en el código. Debe seguir con **Maps JavaScript API** y **Geocoding API** habilitadas, facturación activa y dominio autorizado. Geocoding API es lo que convierte la dirección escrita por el operador en coordenadas para ubicar la visita en el mapa.
-- **Permiso de ubicación del celular:** el supervisor debe aceptar la ubicación del navegador; en producción la web debe abrirse por `https://` para que el GPS funcione correctamente.
+- **Permiso de ubicación del celular:** el supervisor debe aceptar la ubicación del navegador; en producción la web debe abrirse por `https://` para que el GPS funcione correctamente. La app ahora guarda puntos automáticos como máximo cada `minRouteSeconds` y sólo si se movió al menos `minRouteMeters`, para mantener historial sin refrescar toda la pantalla.
 - **Reglas de Firestore:** deben permitir leer/crear `fieldLocations`, `fieldRoutes`, `fieldTasks`, `fieldEvents` y `fieldShiftClosures`, porque ahí se guardan mapa, puntos, fotos, tareas y cierre de turno.
 - **Fotos:** por ahora se guardan como imagen comprimida dentro del documento de Firestore. Si van a subir muchas fotos por día, conviene migrar luego a Firebase Storage.
 
@@ -366,7 +368,7 @@ Para que la vista tipo panel móvil de supervisores funcione completa no hace fa
 10. La presencia se actualiza cada minuto con `lastSeenMs`; en la app se ve verde si está online y rojo si está offline.
 11. En Chat, usá el botón 📎 para adjuntar imágenes o pegá una imagen directamente dentro del campo de mensaje. Esas imágenes se guardan en el campo `attachments` del documento de Firestore.
 12. La API key de Google Maps ya quedó cargada en `window.INTERNAMATUTINO_GOOGLE_MAPS_CONFIG.apiKey`; verificá que tenga Maps JavaScript API habilitada y el dominio autorizado.
-13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Iniciar recorrida** o **Marcar ubicación**. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`.
+13. Ingresá como `Supervisor de Calle` desde un celular, abrí **Supervisores**, permití la ubicación y tocá **Marcar ubicación** o comenzá una visita aceptada. En Firestore deberían aparecer `fieldRoutes`, `fieldLocations` y `fieldEvents`. El mapa reutiliza la instancia de Google Maps y actualiza marcadores/ruta sin reconstruir toda la vista.
 14. Cualquier operador puede entrar a **Supervisores**, tocar **Asignar visita de calle**, cargar dirección/detalle y enviarla. Ya no se cargan latitud/longitud a mano: la app usa Google Geocoding para ubicar esa dirección en el mapa. Queda en `fieldTasks` con estado `Pendiente de aceptación`.
 15. El supervisor de calle ve esas visitas, puede **Aceptar visita** o **Denegar**. Si acepta, queda `Pendiente` hasta que llegue y toque **Llegué y realicé visita** con ubicación/foto.
 16. Para cerrar la gestión completa, el supervisor toca **Finalizar turno** y confirma dos veces dentro del sistema. El resumen queda en `fieldShiftClosures`, las direcciones se limpian del mapa activo con `mapHidden: true`, y desde el historial se puede abrir el reporte para imprimir/guardar como PDF.
