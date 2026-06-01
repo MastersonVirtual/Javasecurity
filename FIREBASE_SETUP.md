@@ -330,7 +330,7 @@ Uso: resumen de cierre de turno. Se crea cuando el supervisor toca **Finalizar t
 6. El supervisor elige una visita aceptada y toca **Comenzar esta tarea**; ahí se crea una ruta activa y se carga esa dirección en el mapa.
 7. Cuando llega al lugar toca **Llegué y realicé visita**; el sistema abre una ventana propia para adjuntar foto desde cámara y escribir una observación.
 8. Al guardar, queda `Finalizada` con foto, observación, ubicación, fecha y responsable.
-9. Al cerrar la jornada, se genera el resumen en `fieldShiftClosures`, queda disponible el botón **PDF**, y las tareas/rutas cerradas se limpian del mapa activo con `mapHidden: true`.
+9. Al cerrar la jornada, se genera el resumen en `fieldShiftClosures`, queda disponible el botón **PDF**, y las tareas/rutas cerradas se limpian del mapa activo con `mapHidden: true`. El PDF de ese cierre usa snapshots de esa jornada/día cerrado, no todo el historial desde el inicio.
 
 ### `qyaItems`
 
