@@ -95,8 +95,7 @@ service cloud.firestore {
     }
 
     match /qyaItems/{itemId} {
-      allow read, create: if true;
-      allow update, delete: if false;
+      allow read, create, update, delete: if true;
     }
 
     match /fieldLocations/{pointId} {
@@ -338,7 +337,7 @@ Uso: resumen de cierre de turno. Se crea cuando el supervisor toca **Finalizar t
 
 ### `qyaItems`
 
-Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y las crea desde el panel administrador.
+Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y permite crear, editar o borrar tarjetas desde el panel administrador usando la clave configurada.
 
 - **Collection ID:** `qyaItems`
 - **Document ID:** automático (`Auto ID`)
@@ -346,10 +345,11 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
   - `icon` — string
   - `question` — string
   - `answer` — string, sin límite corto en el campo de escritura de la pantalla
+  - `updatedBy` / `updatedAtMs` — se agregan cuando se edita una tarjeta existente
   - `createdBy` — string
   - `createdAtMs` — number
 
-El selector de íconos de Q&A incluye opciones operativas ampliadas para seguridad, ubicaciones, cámaras, herramientas, documentos, horarios y alertas.
+El selector de íconos de Q&A incluye opciones operativas ampliadas para seguridad, ubicaciones, cámaras, herramientas, documentos, horarios y alertas, mostrado como grilla/recuadro de selección. La pregunta y la respuesta no tienen límite corto de caracteres en el formulario. Después de guardar, el formulario se limpia para cargar una nueva consulta. Las tarjetas existentes pueden editarse o borrarse usando la clave de administrador.
 
 
 ## Permisos y claves para la vista de supervisores
