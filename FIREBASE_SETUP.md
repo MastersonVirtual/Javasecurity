@@ -181,7 +181,7 @@ Usuarios base que la app crea/usa si faltan en Firebase:
 - Alfonso — `Puesto de referentes` — turno Día — todas las bolsas activas — `+59891909182`
 - Manuel — `Líder de equipos` — turno Tarde — todas las bolsas activas
 - Caroline — `Líder de equipos` — turno Noche — todas las bolsas activas
-- Supervisor de Calle — `Supervisor de calle` — turno Día — `General turno` y `Supervisores de Calle`
+- Supervisor de Calle — `Supervisor de calle` — turno Día — teléfono `+59896210983` — `General turno` y `Supervisores de Calle`
 
 Mapa de puestos por bolsa:
 
@@ -345,9 +345,11 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y la
 - Campos que guarda la app:
   - `icon` — string
   - `question` — string
-  - `answer` — string
+  - `answer` — string, sin límite corto en el campo de escritura de la pantalla
   - `createdBy` — string
   - `createdAtMs` — number
+
+El selector de íconos de Q&A incluye opciones operativas ampliadas para seguridad, ubicaciones, cámaras, herramientas, documentos, horarios y alertas.
 
 
 ## Permisos y claves para la vista de supervisores
