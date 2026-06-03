@@ -158,10 +158,12 @@ Uso: altas/bajas de usuarios y listado de privados. La app lee esta colección p
   - `active` — boolean; `true` aparece en la app, `false` queda dado de baja
   - `workAreas` — array de strings, ejemplo `["Fresh"]`, `["Monitoreo"]`, `["Atención al cliente"]` o `["Supervisores de Calle"]`
   - `role` — string opcional; usar `fieldSupervisor` para supervisores de calle
+  - `phone` — string obligatorio para ingreso por SMS, ejemplo `+59891909182`. Debe corresponder al operador; si no coincide, la app no lo deja entrar.
+  - `phones` — array opcional de teléfonos autorizados si un operador puede usar más de un número.
   - `lastSeenMs` — number actualizado automáticamente por la app cada minuto
   - `currentWorkArea` — string actualizado automáticamente al entrar a un canal
 
-Para dar de alta: agregá un documento con `active: true`. Para dar de baja: cambiá `active` a `false`. Para armar bolsas de trabajo, cargá `workAreas` con los canales donde participa cada usuario; `General turno` siempre llega a todos.
+Para dar de alta: agregá un documento con `active: true` y `phone` con el número autorizado del operador. Para dar de baja: cambiá `active` a `false`. Para armar bolsas de trabajo, cargá `workAreas` con los canales donde participa cada usuario; `General turno` siempre llega a todos.
 
 Usuarios base que la app crea/usa si faltan en Firebase:
 
