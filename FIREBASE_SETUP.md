@@ -167,16 +167,17 @@ Para dar de alta: agregá un documento con `active: true` y `phone` con el núme
 
 Usuarios base que la app crea/usa si faltan en Firebase:
 
-- Iracema — Puesto 2 — `Atención al cliente`
-- Justino — Puesto 3 — `Atención al cliente`
-- Pierina — Puesto 4 — `Monitoreo`
-- Lucia — Puesto 5 — `Monitoreo`
-- Mikaela — Puesto 6 — `Atención al cliente`
-- Maily — Puesto 7 — `Atención al cliente`
+- Romina — Puesto 1 — `Atención al cliente` — `+59893710201`
+- Iracema — Puesto 2 — `Atención al cliente` — `+59895218719`
+- Justino — Puesto 3 — `Atención al cliente` — `+59893785294`
+- Pierina — Puesto 4 — `Monitoreo` — `+59895621772`
+- Lucía — Puesto 5 — `Monitoreo` — `+59892343343`
+- Mikaela — Puesto 6 — `Atención al cliente` — `+59898237755`
+- Maily — Puesto 7 — `Atención al cliente` — `+59892355522`
 - Carvel — Puesto 8 — `Fresh`
-- Valeria — Puesto 9 — `Fresh`
-- Miguel — Puesto 10 — `Atención al cliente`
-- Alexis — Puesto 6 — `Atención al cliente`
+- Valeria — Puesto 9 — `Fresh` — `+59898530613`
+- Miguel — Puesto 10 — `Atención al cliente` — `+59892140688`
+- Alexis — Puesto 6 — `Atención al cliente` — `+59891075980`
 - Alfonso — `Líder de equipos` — turno Día — todas las bolsas activas
 - Manuel — `Líder de equipos` — turno Tarde — todas las bolsas activas
 - Caroline — `Líder de equipos` — turno Noche — todas las bolsas activas
