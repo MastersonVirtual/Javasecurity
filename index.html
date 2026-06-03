@@ -267,16 +267,17 @@ const defaultUsers=[
   {id:'valeria',name:'Valeria',post:'Puesto 9',workAreas:['Fresh'],phone:'+59898530613'},
   {id:'miguel',name:'Miguel',post:'Puesto 10',workAreas:['Atención al cliente'],phone:'+59892140688'},
   {id:'alexis',name:'Alexis',post:'Puesto 6',workAreas:['Atención al cliente'],phone:'+59891075980'},
-  {id:'alfonso',name:'Alfonso',post:'Líder de equipos',shift:'Día',workAreas:['General turno','Atención al cliente','Fresh','Monitoreo','Supervisores de Calle'],leader:true},
+  {id:'alfonso',name:'Alfonso',post:'Puesto de referentes',shift:'Día',workAreas:['General turno','Atención al cliente','Fresh','Monitoreo','Supervisores de Calle'],leader:true,phone:'+59891909182'},
   {id:'manuel',name:'Manuel',post:'Líder de equipos',shift:'Tarde',workAreas:['General turno','Atención al cliente','Fresh','Monitoreo','Supervisores de Calle'],leader:true},
   {id:'caroline',name:'Caroline',post:'Líder de equipos',shift:'Noche',workAreas:['General turno','Atención al cliente','Fresh','Monitoreo','Supervisores de Calle'],leader:true},
   {id:'supervisor-calle',name:'Supervisor de Calle',post:'Supervisor de calle',shift:'Día',role:'fieldSupervisor',workAreas:['General turno','Supervisores de Calle']}
 ];
-const posts=Array.from({length:10},(_,i)=>`Puesto ${i+1}`);
+const posts=[...Array.from({length:10},(_,i)=>`Puesto ${i+1}`),'Puesto de referentes'];
 const workAreaByPost={
   'Puesto 1':'Atención al cliente','Puesto 2':'Atención al cliente','Puesto 3':'Atención al cliente','Puesto 6':'Atención al cliente','Puesto 7':'Atención al cliente','Puesto 10':'Atención al cliente',
   'Puesto 8':'Fresh','Puesto 9':'Fresh',
-  'Puesto 4':'Monitoreo','Puesto 5':'Monitoreo'
+  'Puesto 4':'Monitoreo','Puesto 5':'Monitoreo',
+  'Puesto de referentes':'General turno'
 };
 const state={
   active:'dashboard',session:null,authUser:JSON.parse(localStorage.getItem('internamatutino-auth')||'null'),loginShift:'Día',currentChannel:'General turno',currentWorkArea:'General turno',privateTo:null,taskFilter:'Todas',taskStatusFilter:'Todas',alertPanel:false,qyaSearch:'',qyaDraftSearch:'',qyaSearchTimer:null,pendingAttachments:[],seededUsers:false,globalSearch:'',globalSearchTimer:null,qyaFormDraft:{key:'',icon:'🚨',question:'',answer:''},qyaFormOpen:false,fieldLocations:[],fieldTasks:[],fieldRoutes:[],fieldEvents:[],shiftClosures:[],currentRouteId:null,currentCoords:null,fieldWatchId:null,fieldTaskFormOpen:false,fieldMapType:'roadmap',fieldMapFollow:true,
@@ -690,12 +691,15 @@ function seedMissingUsers(remote=[]){
       db.collection('users').doc(def.id).set({...def,shift:def.shift||'Día',active:true},{merge:true}).catch(e=>console.warn('No se pudo crear usuario base',def.name,e));
       return;
     }
-    if(def.phone&&!operatorPhones(existing).length){
-      db.collection('users').doc(existing.id).set({phone:def.phone},{merge:true}).catch(e=>console.warn('No se pudo actualizar teléfono base',def.name,e));
+    const patch={};
+    if(def.phone&&!operatorPhones(existing).length)patch.phone=def.phone;
+    if(def.id==='alfonso'&&existing.post!==def.post)patch.post=def.post;
+    if(Object.keys(patch).length){
+      db.collection('users').doc(existing.id).set(patch,{merge:true}).catch(e=>console.warn('No se pudo actualizar usuario base',def.name,e));
     }
   });
 }
-function subscribeUsers(){if(!db)return;if(unsubUsers)unsubUsers();unsubUsers=db.collection('users').orderBy('name','asc').onSnapshot(snapshot=>{const remote=snapshot.docs.map((doc,i)=>{const data=doc.data();return{id:doc.id,name:data.name||doc.id,post:data.post||`Puesto ${i+1}`,active:data.active!==false,shift:data.shift||'Día',workAreas:data.workAreas||['General turno'],leader:!!data.leader,role:data.role,phone:data.phone||data.phoneNumber||'',phoneNumber:data.phoneNumber||data.phone||'',phones:data.phones||data.phoneNumbers||[],phoneNumbers:data.phoneNumbers||data.phones||[],lastSeenMs:data.lastSeenMs||0,currentWorkArea:data.currentWorkArea,onlineFlag:data.online!==false,online:data.online!==false&&Date.now()-(data.lastSeenMs||0)<90000};}).filter(visibleUser);seedMissingUsers(remote);const merged=defaultUsers.map(def=>{const remoteUser=remote.find(u=>(u.id===def.id||u.name.toLowerCase()===def.name.toLowerCase())&&itemShift(u)===(def.shift||'Día'));const mergedUser={...def,shift:def.shift||'Día',active:true,lastSeenMs:0,online:false,...remoteUser};if(def.phone&&!mergedUser.phone)mergedUser.phone=def.phone;if(def.phones&&!mergedUser.phones?.length)mergedUser.phones=def.phones;return mergedUser;});remote.filter(u=>!merged.some(m=>m.id===u.id||m.name.toLowerCase()===u.name.toLowerCase())).forEach(u=>merged.push(u));state.operators=merged;if(state.session&&!activeOperators().some(o=>o.name===state.session.operator)){toast('Tu usuario fue dado de baja en Firebase');logout();return;}populateLogin();if(state.session)render();},e=>{console.warn('No se pudieron sincronizar usuarios',e);toast('No se pudieron sincronizar usuarios con Firestore');});}
+function subscribeUsers(){if(!db)return;if(unsubUsers)unsubUsers();unsubUsers=db.collection('users').orderBy('name','asc').onSnapshot(snapshot=>{const remote=snapshot.docs.map((doc,i)=>{const data=doc.data();return{id:doc.id,name:data.name||doc.id,post:data.post||`Puesto ${i+1}`,active:data.active!==false,shift:data.shift||'Día',workAreas:data.workAreas||['General turno'],leader:!!data.leader,role:data.role,phone:data.phone||data.phoneNumber||'',phoneNumber:data.phoneNumber||data.phone||'',phones:data.phones||data.phoneNumbers||[],phoneNumbers:data.phoneNumbers||data.phones||[],lastSeenMs:data.lastSeenMs||0,currentWorkArea:data.currentWorkArea,onlineFlag:data.online!==false,online:data.online!==false&&Date.now()-(data.lastSeenMs||0)<90000};}).filter(visibleUser);seedMissingUsers(remote);const merged=defaultUsers.map(def=>{const remoteUser=remote.find(u=>(u.id===def.id||u.name.toLowerCase()===def.name.toLowerCase())&&itemShift(u)===(def.shift||'Día'));const mergedUser={...def,shift:def.shift||'Día',active:true,lastSeenMs:0,online:false,...remoteUser};if(def.phone&&!mergedUser.phone)mergedUser.phone=def.phone;if(def.phones&&!mergedUser.phones?.length)mergedUser.phones=def.phones;if(def.id==='alfonso')mergedUser.post=def.post;return mergedUser;});remote.filter(u=>!merged.some(m=>m.id===u.id||m.name.toLowerCase()===u.name.toLowerCase())).forEach(u=>merged.push(u));state.operators=merged;if(state.session&&!activeOperators().some(o=>o.name===state.session.operator)){toast('Tu usuario fue dado de baja en Firebase');logout();return;}populateLogin();if(state.session)render();},e=>{console.warn('No se pudieron sincronizar usuarios',e);toast('No se pudieron sincronizar usuarios con Firestore');});}
 function currentUserDoc(){return activeOperators().find(o=>o.name===state.session?.operator&&itemShift(o)===currentShift())||state.operators.find(o=>o.name===state.session?.operator&&itemShift(o)===currentShift())}
 function userInChannel(user,channel){return channel==='General turno'||(user.workAreas||[]).includes(channel)}
 function sessionUser(){return activeOperators().find(o=>o.name===state.session?.operator)||{name:state.session?.operator,post:state.session?.post,workAreas:[state.session?.workArea].filter(Boolean)}}

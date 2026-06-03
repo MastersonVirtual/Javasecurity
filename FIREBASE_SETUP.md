@@ -178,7 +178,7 @@ Usuarios base que la app crea/usa si faltan en Firebase:
 - Valeria — Puesto 9 — `Fresh` — `+59898530613`
 - Miguel — Puesto 10 — `Atención al cliente` — `+59892140688`
 - Alexis — Puesto 6 — `Atención al cliente` — `+59891075980`
-- Alfonso — `Líder de equipos` — turno Día — todas las bolsas activas
+- Alfonso — `Puesto de referentes` — turno Día — todas las bolsas activas — `+59891909182`
 - Manuel — `Líder de equipos` — turno Tarde — todas las bolsas activas
 - Caroline — `Líder de equipos` — turno Noche — todas las bolsas activas
 - Supervisor de Calle — `Supervisor de calle` — turno Día — `General turno` y `Supervisores de Calle`
@@ -188,6 +188,7 @@ Mapa de puestos por bolsa:
 - `Atención al cliente`: Puestos 1, 2, 3, 6, 7 y 10
 - `Fresh`: Puestos 8 y 9
 - `Monitoreo`: Puestos 4 y 5
+- `Puesto de referentes`: puesto adicional para líderes/referentes, separado de los puestos 1 al 10
 
 ### `messages`
 
