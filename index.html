@@ -223,7 +223,7 @@ body{font-size:clamp(13px,1.05vw,15px);}
         <button id="appleAuthBtn" class="ghost auth-apple-hidden" type="button" aria-hidden="true" tabindex="-1">Continuar con Apple</button>
       </div>
       <div class="sms-panel">
-        <label>Teléfono<input id="phoneAuthNumber" type="tel" autocomplete="tel" placeholder="+598..."></label>
+        <label>Teléfono<input id="phoneAuthNumber" type="tel" autocomplete="tel" value="+598" placeholder="+598..."></label>
         <button id="phoneAuthBtn" class="ghost" type="button">Enviar SMS</button>
         <label>Código SMS<input id="phoneAuthCode" inputmode="numeric" autocomplete="one-time-code" placeholder="Código recibido"></label>
         <button id="phoneVerifyBtn" class="ghost" type="button">Verificar SMS</button>
@@ -256,16 +256,17 @@ body{font-size:clamp(13px,1.05vw,15px);}
 <script src="/__/firebase/init.js"></script>
 <script>
 const defaultUsers=[
-  {id:'iracema',name:'Iracema',post:'Puesto 2',workAreas:['Atención al cliente']},
-  {id:'justino',name:'Justino',post:'Puesto 3',workAreas:['Atención al cliente']},
-  {id:'pierina',name:'Pierina',post:'Puesto 4',workAreas:['Monitoreo']},
-  {id:'lucia',name:'Lucia',post:'Puesto 5',workAreas:['Monitoreo']},
-  {id:'mikaela',name:'Mikaela',post:'Puesto 6',workAreas:['Atención al cliente']},
-  {id:'maily',name:'Maily',post:'Puesto 7',workAreas:['Atención al cliente']},
+  {id:'romina',name:'Romina',post:'Puesto 1',workAreas:['Atención al cliente'],phone:'+59893710201'},
+  {id:'iracema',name:'Iracema',post:'Puesto 2',workAreas:['Atención al cliente'],phone:'+59895218719'},
+  {id:'justino',name:'Justino',post:'Puesto 3',workAreas:['Atención al cliente'],phone:'+59893785294'},
+  {id:'pierina',name:'Pierina',post:'Puesto 4',workAreas:['Monitoreo'],phone:'+59895621772'},
+  {id:'lucia',name:'Lucía',post:'Puesto 5',workAreas:['Monitoreo'],phone:'+59892343343'},
+  {id:'mikaela',name:'Mikaela',post:'Puesto 6',workAreas:['Atención al cliente'],phone:'+59898237755'},
+  {id:'maily',name:'Maily',post:'Puesto 7',workAreas:['Atención al cliente'],phone:'+59892355522'},
   {id:'carvel',name:'Carvel',post:'Puesto 8',workAreas:['Fresh']},
-  {id:'valeria',name:'Valeria',post:'Puesto 9',workAreas:['Fresh']},
-  {id:'miguel',name:'Miguel',post:'Puesto 10',workAreas:['Atención al cliente']},
-  {id:'alexis',name:'Alexis',post:'Puesto 6',workAreas:['Atención al cliente']},
+  {id:'valeria',name:'Valeria',post:'Puesto 9',workAreas:['Fresh'],phone:'+59898530613'},
+  {id:'miguel',name:'Miguel',post:'Puesto 10',workAreas:['Atención al cliente'],phone:'+59892140688'},
+  {id:'alexis',name:'Alexis',post:'Puesto 6',workAreas:['Atención al cliente'],phone:'+59891075980'},
   {id:'alfonso',name:'Alfonso',post:'Líder de equipos',shift:'Día',workAreas:['General turno','Atención al cliente','Fresh','Monitoreo','Supervisores de Calle'],leader:true},
   {id:'manuel',name:'Manuel',post:'Líder de equipos',shift:'Tarde',workAreas:['General turno','Atención al cliente','Fresh','Monitoreo','Supervisores de Calle'],leader:true},
   {id:'caroline',name:'Caroline',post:'Líder de equipos',shift:'Noche',workAreas:['General turno','Atención al cliente','Fresh','Monitoreo','Supervisores de Calle'],leader:true},
@@ -357,6 +358,33 @@ function authErrorMessage(error){
   if(code==='auth/popup-closed-by-user')return'Inicio de sesión cancelado.';
   if(code==='auth/popup-blocked')return'El navegador bloqueó la ventana. Se intentará redirigir.';
   return error?.message||'No se pudo autenticar con Firebase Auth.';
+}
+function phoneVariants(phone){
+  const digits=String(phone||'').replace(/\D/g,'');
+  const variants=new Set();
+  if(!digits)return variants;
+  variants.add(digits);
+  if(digits.startsWith('598'))variants.add(`0${digits.slice(3)}`);
+  if(digits.startsWith('0'))variants.add(`598${digits.slice(1)}`);
+  return variants;
+}
+function normalizeLoginPhone(raw){
+  let digits=String(raw||'').replace(/\D/g,'');
+  if(!digits)return '+598';
+  if(digits.startsWith('0'))digits=`598${digits.slice(1)}`;
+  if(!digits.startsWith('598'))digits=`598${digits}`;
+  return `+${digits}`;
+}
+function operatorPhones(user){
+  return [user?.phone,user?.phoneNumber,...(user?.phones||[]),...(user?.phoneNumbers||[])].filter(Boolean);
+}
+function phoneAllowedForOperator(user,authPhone){
+  const allowed=operatorPhones(user);
+  if(!authPhone)return{ok:false,message:'Firebase no devolvió un teléfono verificado.'};
+  if(!allowed.length)return{ok:false,message:`${user?.name||'Este usuario'} no tiene teléfono autorizado en Firebase.`};
+  const authVariants=phoneVariants(authPhone);
+  const ok=allowed.some(phone=>[...phoneVariants(phone)].some(v=>authVariants.has(v)));
+  return ok?{ok:true}:{ok:false,message:'El teléfono verificado no corresponde al operador seleccionado.'};
 }
 function mergeAuthIntoCurrentSession(user){
   const payload=authUserPayload(user);
@@ -467,10 +495,10 @@ function recaptchaVerifier(){
   return window.internaRecaptchaVerifier;
 }
 async function startPhoneAuth(){
-  const ready=ensureAuthReady(),phone=$('phoneAuthNumber')?.value.trim();
+  const ready=ensureAuthReady(),phone=normalizeLoginPhone($('phoneAuthNumber')?.value);const phoneInput=$('phoneAuthNumber');if(phoneInput)phoneInput.value=phone;
   if(!ready)return;
-  if(!phone){
-    setAuthStatus('Ingresá un número en formato internacional, por ejemplo +598...',true);
+  if(phone.length<=4){
+    setAuthStatus('Ingresá el número después del prefijo +598.',true);
     return;
   }
   try{
@@ -512,7 +540,12 @@ async function verifyPhoneAuth(){
   }
 }
 function bindAuthLoginControls(){
-  const google=$('googleAuthBtn'),apple=$('appleAuthBtn'),phone=$('phoneAuthBtn'),verify=$('phoneVerifyBtn');
+  const google=$('googleAuthBtn'),apple=$('appleAuthBtn'),phone=$('phoneAuthBtn'),verify=$('phoneVerifyBtn'),phoneInput=$('phoneAuthNumber');
+  if(phoneInput){
+    if(!phoneInput.value)phoneInput.value='+598';
+    phoneInput.oninput=()=>{if(!phoneInput.value.startsWith('+598'))phoneInput.value=normalizeLoginPhone(phoneInput.value)};
+    phoneInput.onblur=()=>{phoneInput.value=normalizeLoginPhone(phoneInput.value)};
+  }
   if(google)google.onclick=signInWithGoogleAuth;
   if(apple)apple.onclick=signInWithAppleAuth;
   if(phone)phone.onclick=startPhoneAuth;
@@ -555,7 +588,7 @@ function notifyBell(type,text,refId){if(state.alerts.some(a=>a.refId===refId))re
 function renderBell(){const badge=$('alertBadge'),menu=$('alertMenu');if(!badge||!menu)return;const unread=state.alerts.filter(a=>!a.read).length;badge.classList.toggle('hidden',!unread);menu.classList.toggle('hidden',!state.alertPanel);menu.innerHTML=`<div class="alert-head"><strong>Notificaciones</strong><button id="markAlertsRead">Marcar leídas</button></div>${state.alerts.map(a=>`<button class="alert-item ${a.read?'':'unread'}" data-alert="${a.id}"><b>${a.type==='task'?'▣':'💬'}</b><span>${escapeHtml(a.text)}<small>${a.time}</small></span></button>`).join('')||'<div class="locked-note">Sin notificaciones nuevas.</div>'}`;const mark=$('markAlertsRead');if(mark)mark.onclick=e=>{e.stopPropagation();state.alerts=state.alerts.map(a=>({...a,read:true}));saveAlertState();renderBell();};menu.querySelectorAll('[data-alert]').forEach(b=>b.onclick=()=>{const a=state.alerts.find(x=>x.id===b.dataset.alert);if(a){a.read=true;state.active=a.type==='task'?'tasks':'chat';if(a.type==='task')state.taskStatusFilter='Pendientes';saveAlertState();render();}});}
 function setupBell(){const bell=$('notificationBell');if(!bell)return;bell.onclick=e=>{e.stopPropagation();state.alertPanel=!state.alertPanel;renderBell();};document.addEventListener('click',e=>{if(!$('alertMenu')?.contains(e.target)&&!bell.contains(e.target)){state.alertPanel=false;renderBell();}});renderBell();}
 function setupGlobalSearch(){const input=$('globalSearch');if(!input)return;input.value=state.globalSearch;input.oninput=e=>{state.globalSearch=e.target.value.trim();if(state.globalSearchTimer)clearTimeout(state.globalSearchTimer);state.globalSearchTimer=setTimeout(render,160);};input.onkeydown=e=>{if(e.key==='Escape'){state.globalSearch='';input.value='';render();}}}
-function boot(){state.session=JSON.parse(localStorage.getItem('internamatutino-session')||'null');state.authUser=storedAuthUser();if(state.session&&!state.session.shift)state.session.shift='Día';state.loginShift=state.session?.shift||scheduledShift();initFirestore();populateLogin();renderNav();setupBell();setupGlobalSearch();if(state.session){showApp()}else{$('login').classList.remove('hidden');$('app').classList.add('hidden')}setInterval(()=>{$('clock').textContent=fullTime()},1000);$('clock').textContent=fullTime();}
+function boot(){state.session=JSON.parse(localStorage.getItem('internamatutino-session')||'null');state.authUser=storedAuthUser();if(state.session&&!state.session.auth?.uid&&!state.authUser?.uid){localStorage.removeItem('internamatutino-session');state.session=null;}if(state.session&&!state.session.shift)state.session.shift='Día';state.loginShift=state.session?.shift||scheduledShift();initFirestore();populateLogin();renderNav();setupBell();setupGlobalSearch();if(state.session){showApp()}else{$('login').classList.remove('hidden');$('app').classList.add('hidden')}setInterval(()=>{$('clock').textContent=fullTime()},1000);$('clock').textContent=fullTime();}
 function completeOperationalLogin(){
   const op=$('operatorSelect'),po=$('postSelect'),leaderKey=$('leaderKey');
   const post=po.value.replace(' · ocupado',''),shift=state.loginShift,operator=loginOperators().find(o=>o.name===op.value);
@@ -565,6 +598,12 @@ function completeOperationalLogin(){
     return false;
   }
   if(!op.value||!operator){toast(`No hay usuarios activos para el turno ${shift}`);return false;}
+  const phoneCheck=phoneAllowedForOperator(operator,state.authUser.phone);
+  if(!phoneCheck.ok){
+    setAuthStatus(phoneCheck.message,true);
+    toast(phoneCheck.message);
+    return false;
+  }
   if(isLeader(operator)&&leaderKey?.value!=='3331'){toast('Clave líder incorrecta.');return false;}
   if(occupied().includes(post)){toast('El puesto seleccionado está ocupado en este turno');return false;}
   const workArea=isFieldSupervisor(operator)?'Supervisores de Calle':workAreaByPost[post]||operator.workAreas?.[0]||'General turno';
@@ -607,14 +646,27 @@ function taskComposer(){return`<form class="task-form" id="taskForm"><label>Tít
 async function createTask(){const title=$('taskTitle')?.value.trim(),description=$('taskDescription')?.value.trim();if(!title||!description){toast('Completá título y descripción');return;}const priority=$('taskPriority').value,category=$('taskCategory').value,operator=$('taskAssignee').value,createdAt=Date.now();const task={title,description,priority,operator,status:'Pendiente',time:time(createdAt),category,tags:[operator==='Todos'?'Equipo':'Asignada',category],createdBy:state.session.operator,shift:state.session.shift,createdAt};try{if(db){await db.collection('tasks').add({...task,createdAtMs:createdAt})}else{state.tasks.unshift({id:crypto.randomUUID(),...task,createdAtMs:createdAt})}}catch(e){console.warn('No se pudo guardar la tarea',e);toast('No se pudo guardar la tarea en Firestore');return;}addActivity(`${state.session.operator} agregó la tarea ${title} ${operator==='Todos'?'pendiente para todos':`asignada a ${operator}`}.`);state.active='tasks';state.taskStatusFilter='Todas';state.taskFilter='Todas';toast(operator==='Todos'?'Tarea publicada para todos':'Tarea asignada a '+operator);render();}
 function initFirestore(){if(!window.firebase){setFirebaseStatus('Firebase SDK no cargó');console.warn('Firebase SDK no cargó. Revisá conexión o scripts de Firebase.');toast('Firebase SDK no cargó: los mensajes NO se guardan');return;}if(!canUseFirestore()){setFirebaseStatus('Firebase sin configurar');console.warn('Firebase no configurado: falta projectId en firebaseConfig o la inicialización de Firebase Hosting.');toast('Firebase no configurado: los mensajes NO se guardan');return;}try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);initAuth();db=firebase.firestore();setFirebaseStatus(`Firebase conectado: ${firebase.app().options.projectId||'proyecto activo'}`);subscribeUsers();subscribeTasks();subscribeMessages();subscribeQya();subscribeField();startPresenceHeartbeat();}catch(e){console.warn('Firestore no disponible',e);db=null;setFirebaseStatus('Firestore no disponible');toast('Firestore no disponible: revisá firebaseConfig y reglas');}}
 function processTaskNotifications(){if(!state.session)return;state.tasks.forEach(t=>{const assigned=t.operator===state.session.operator||t.operator==='Todos';if(t.status==='Pendiente'&&assigned&&!state.seenTaskIds.has(t.id)){state.seenTaskIds.add(t.id);if(t.createdBy!==state.session.operator)notifyBell('task',t.operator==='Todos'?`Nueva tarea para todos: ${t.title}`:`Te asignaron una tarea: ${t.title}`,t.id);}});saveAlertState();}
-function seedMissingUsers(remote=[]){if(!db||state.seededUsers)return;state.seededUsers=true;defaultUsers.filter(visibleUser).filter(def=>!remote.some(u=>(u.id===def.id||u.name.toLowerCase()===def.name.toLowerCase())&&itemShift(u)===(def.shift||'Día'))).forEach(def=>db.collection('users').doc(def.id).set({...def,shift:def.shift||'Día',active:true},{merge:true}).catch(e=>console.warn('No se pudo crear usuario base',def.name,e)));}
-function subscribeUsers(){if(!db)return;if(unsubUsers)unsubUsers();unsubUsers=db.collection('users').orderBy('name','asc').onSnapshot(snapshot=>{const remote=snapshot.docs.map((doc,i)=>{const data=doc.data();return{id:doc.id,name:data.name||doc.id,post:data.post||`Puesto ${i+1}`,active:data.active!==false,shift:data.shift||'Día',workAreas:data.workAreas||['General turno'],leader:!!data.leader,role:data.role,lastSeenMs:data.lastSeenMs||0,currentWorkArea:data.currentWorkArea,onlineFlag:data.online!==false,online:data.online!==false&&Date.now()-(data.lastSeenMs||0)<90000};}).filter(visibleUser);seedMissingUsers(remote);const merged=defaultUsers.map(def=>{const remoteUser=remote.find(u=>(u.id===def.id||u.name.toLowerCase()===def.name.toLowerCase())&&itemShift(u)===(def.shift||'Día'));return{...def,shift:def.shift||'Día',active:true,lastSeenMs:0,online:false,...remoteUser};});remote.filter(u=>!merged.some(m=>m.id===u.id||m.name.toLowerCase()===u.name.toLowerCase())).forEach(u=>merged.push(u));state.operators=merged;if(state.session&&!activeOperators().some(o=>o.name===state.session.operator)){toast('Tu usuario fue dado de baja en Firebase');logout();return;}populateLogin();if(state.session)render();},e=>{console.warn('No se pudieron sincronizar usuarios',e);toast('No se pudieron sincronizar usuarios con Firestore');});}
+function seedMissingUsers(remote=[]){
+  if(!db||state.seededUsers)return;
+  state.seededUsers=true;
+  defaultUsers.filter(visibleUser).forEach(def=>{
+    const existing=remote.find(u=>(u.id===def.id||u.name.toLowerCase()===def.name.toLowerCase())&&itemShift(u)===(def.shift||'Día'));
+    if(!existing){
+      db.collection('users').doc(def.id).set({...def,shift:def.shift||'Día',active:true},{merge:true}).catch(e=>console.warn('No se pudo crear usuario base',def.name,e));
+      return;
+    }
+    if(def.phone&&!operatorPhones(existing).length){
+      db.collection('users').doc(existing.id).set({phone:def.phone},{merge:true}).catch(e=>console.warn('No se pudo actualizar teléfono base',def.name,e));
+    }
+  });
+}
+function subscribeUsers(){if(!db)return;if(unsubUsers)unsubUsers();unsubUsers=db.collection('users').orderBy('name','asc').onSnapshot(snapshot=>{const remote=snapshot.docs.map((doc,i)=>{const data=doc.data();return{id:doc.id,name:data.name||doc.id,post:data.post||`Puesto ${i+1}`,active:data.active!==false,shift:data.shift||'Día',workAreas:data.workAreas||['General turno'],leader:!!data.leader,role:data.role,phone:data.phone||data.phoneNumber||'',phoneNumber:data.phoneNumber||data.phone||'',phones:data.phones||data.phoneNumbers||[],phoneNumbers:data.phoneNumbers||data.phones||[],lastSeenMs:data.lastSeenMs||0,currentWorkArea:data.currentWorkArea,onlineFlag:data.online!==false,online:data.online!==false&&Date.now()-(data.lastSeenMs||0)<90000};}).filter(visibleUser);seedMissingUsers(remote);const merged=defaultUsers.map(def=>{const remoteUser=remote.find(u=>(u.id===def.id||u.name.toLowerCase()===def.name.toLowerCase())&&itemShift(u)===(def.shift||'Día'));const mergedUser={...def,shift:def.shift||'Día',active:true,lastSeenMs:0,online:false,...remoteUser};if(def.phone&&!mergedUser.phone)mergedUser.phone=def.phone;if(def.phones&&!mergedUser.phones?.length)mergedUser.phones=def.phones;return mergedUser;});remote.filter(u=>!merged.some(m=>m.id===u.id||m.name.toLowerCase()===u.name.toLowerCase())).forEach(u=>merged.push(u));state.operators=merged;if(state.session&&!activeOperators().some(o=>o.name===state.session.operator)){toast('Tu usuario fue dado de baja en Firebase');logout();return;}populateLogin();if(state.session)render();},e=>{console.warn('No se pudieron sincronizar usuarios',e);toast('No se pudieron sincronizar usuarios con Firestore');});}
 function currentUserDoc(){return activeOperators().find(o=>o.name===state.session?.operator&&itemShift(o)===currentShift())||state.operators.find(o=>o.name===state.session?.operator&&itemShift(o)===currentShift())}
 function userInChannel(user,channel){return channel==='General turno'||(user.workAreas||[]).includes(channel)}
 function sessionUser(){return activeOperators().find(o=>o.name===state.session?.operator)||{name:state.session?.operator,post:state.session?.post,workAreas:[state.session?.workArea].filter(Boolean)}}
 function channelAllowed(channel,user=sessionUser()){return channel==='General turno'||!!user?.leader||userInChannel(user,channel)}
 function visibleChannels(){const user=sessionOperator();return channels.filter(c=>channelAllowed(c)&&(isFieldSupervisor(user)?['General turno','Supervisores de Calle'].includes(c):true))}
-async function updatePresence(){if(!db||!state.session)return;const user=currentUserDoc();if(!user?.id)return;await db.collection('users').doc(user.id).set({name:state.session.operator,post:state.session.post,active:true,online:true,shift:state.session.shift,currentWorkArea:state.currentWorkArea,lastSeenMs:Date.now(),authUid:(state.session.auth||state.authUser)?.uid||null,authName:(state.session.auth||state.authUser)?.name||null,authEmail:(state.session.auth||state.authUser)?.email||null,authProvider:(state.session.auth||state.authUser)?.provider||null},{merge:true});}
+async function updatePresence(){if(!db||!state.session)return;const user=currentUserDoc();if(!user?.id)return;await db.collection('users').doc(user.id).set({name:state.session.operator,post:state.session.post,active:true,online:true,shift:state.session.shift,currentWorkArea:state.currentWorkArea,lastSeenMs:Date.now(),authUid:(state.session.auth||state.authUser)?.uid||null,authName:(state.session.auth||state.authUser)?.name||null,authEmail:(state.session.auth||state.authUser)?.email||null,authPhone:(state.session.auth||state.authUser)?.phone||null,authProvider:(state.session.auth||state.authUser)?.provider||null},{merge:true});}
 function refreshPresenceAges(){const now=Date.now();state.operators=state.operators.map(o=>({...o,online:o.onlineFlag!==false&&now-(o.lastSeenMs||0)<90000}));}
 function startPresenceHeartbeat(){if(state.presenceTimer)return;state.presenceTimer=setInterval(()=>{updatePresence();refreshPresenceAges();const pill=$('onlinePill');if(pill)pill.textContent=`👥 ${activeOperators().filter(o=>o.online).length}/${activeOperators().length||0}`;},30000);}
 function subscribeTasks(){if(!db)return;if(unsubTasks)unsubTasks();unsubTasks=db.collection('tasks').orderBy('createdAtMs','desc').onSnapshot(snapshot=>{state.tasks=snapshot.docs.map(doc=>({id:doc.id,...doc.data()})).filter(sameShift);processTaskNotifications();render();},e=>{console.warn('No se pudieron sincronizar tareas',e);toast('No se pudieron sincronizar tareas con Firestore');});}
