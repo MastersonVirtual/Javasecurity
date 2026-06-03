@@ -349,8 +349,11 @@ Uso: preguntas y respuestas del módulo Q&A. La app las lee desde Firestore y pe
   - `createdBy` — string
   - `createdAtMs` — number
 
-El selector de íconos de Q&A incluye opciones operativas ampliadas para seguridad, ubicaciones, cámaras, herramientas, documentos, horarios y alertas, mostrado como grilla/recuadro de selección. La pregunta y la respuesta no tienen límite corto de caracteres en el formulario. Después de guardar, el formulario se limpia para cargar una nueva consulta. Las tarjetas existentes pueden editarse o borrarse usando la clave de administrador.
+El selector de íconos de Q&A incluye opciones operativas ampliadas para seguridad, ubicaciones, cámaras, herramientas, documentos, horarios y alertas, mostrado como grilla/recuadro de selección. La pregunta y la respuesta no tienen límite corto de caracteres en el formulario. Después de guardar, el formulario se limpia para cargar una nueva consulta. Las tarjetas existentes pueden editarse o borrarse usando la clave de administrador. La búsqueda ignora tildes y acentos, por lo que escribir `monitoreo`, `atencion` o `lucia` encuentra coincidencias aunque el texto guardado tenga acentos.
 
+
+
+La vista informativa de líderes muestra la **Dirección GPS** del Supervisor de Calle a partir de la última ubicación recibida. Cada vez que el dispositivo del supervisor registra un nuevo punto GPS, la dirección se recalcula de forma aproximada con Google Geocoder y se vuelve a mostrar en el panel.
 
 ## Permisos y claves para la vista de supervisores
 
