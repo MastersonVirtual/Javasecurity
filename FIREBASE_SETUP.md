@@ -382,7 +382,7 @@ Para que la vista tipo panel móvil de supervisores funcione completa no hace fa
 ## 8. Prueba completa
 
 1. Abrí la web.
-2. Elegí el operador del turno automático y entrá a la central.
+2. Elegí el operador del turno automático y entrá a la central. Si necesitás cambiar manualmente el turno, seleccioná otro turno y cargá la clave de líder; sin esa clave el ingreso queda bloqueado.
 3. Entrá a **Chat**.
 4. Enviá un mensaje en `General turno`.
 5. En Firebase Console → **Firestore Database** → **Datos**, debería aparecer la colección `messages` con un documento nuevo.

@@ -204,6 +204,17 @@ body{font-size:clamp(13px,1.05vw,15px);}
 @media(max-width:720px){.qya-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.qya-search-row{grid-template-columns:1fr}.qya-admin-card{order:2}.qya-icon-picker{grid-template-columns:repeat(auto-fill,minmax(40px,1fr))}}
 @media(max-width:420px){.qya-grid{grid-template-columns:1fr}}
 
+
+/* Q&A visual refresh */
+.qya-top{grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);align-items:stretch}
+.qya-top .module-hero,.qya-admin-card{background:linear-gradient(145deg,rgba(18,32,34,.96),rgba(24,24,24,.78));border-color:rgba(0,188,212,.22)}
+.qya-top .module-hero{min-height:128px}.qya-top .module-icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:rgba(0,188,212,.12);box-shadow:0 0 26px rgba(0,188,212,.12)}
+.qya-admin-card{gap:8px}.qya-admin-card .panel-head button{background:rgba(0,188,212,.12);border-color:rgba(0,188,212,.35);color:#eaffff;font-weight:950}
+.qya-search-row{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:20px;background:rgba(255,255,255,.035)}
+.qya-search-row .search{background:rgba(255,255,255,.07);border-radius:15px}.qya-search-row button{min-height:42px}
+.qya-grid{align-items:stretch}.qya-card{background:linear-gradient(145deg,rgba(239,250,249,.98),rgba(217,238,236,.96));border:1px solid rgba(0,100,101,.22);box-shadow:0 16px 40px rgba(0,0,0,.18);min-height:250px}.qya-card-main{align-items:flex-start}.qya-icon{background:linear-gradient(135deg,rgba(0,188,212,.18),rgba(0,100,101,.14));box-shadow:inset 0 0 0 1px rgba(0,100,101,.12)}.qya-card h3{font-size:1rem;line-height:1.3;color:#006465}.qya-card p{font-size:.88rem;color:#123536;line-height:1.62}.qya-actions{padding-top:10px;border-top:1px solid rgba(0,100,101,.12)}.qya-actions button{background:rgba(0,188,212,.12);border-color:rgba(0,100,101,.2)}.qya-actions button.danger{background:rgba(255,82,82,.1)}
+@media(max-width:720px){.qya-top .module-hero{grid-template-columns:1fr}.qya-card{min-height:auto}.qya-search-row{padding:8px}.qya-admin-card{order:0}}
+
 /* Mobile polish: safe layout, closable drawer and quick view tabs */
 .menu-backdrop{display:none;border:0;padding:0;background:rgba(0,0,0,.48);backdrop-filter:blur(4px);position:fixed;inset:0;z-index:29}.mobile-view-tabs{display:none}
 @media(max-width:860px){
@@ -272,7 +283,7 @@ body{font-size:clamp(13px,1.05vw,15px);}
     <h1>Interna Virtual</h1>
     <div class="login-divider"><span></span></div>
     <div class="login-grid">
-      <label>Turno<select id="shiftSelect" disabled><option>Día</option><option>Tarde</option><option>Noche</option></select></label>
+      <label>Turno<select id="shiftSelect"><option>Día</option><option>Tarde</option><option>Noche</option></select></label>
       <label>Operador<select id="operatorSelect"></select></label>
       <label>Puesto operativo<select id="postSelect"></select></label>
       <label id="leaderKeyWrap" class="hidden">Clave líder<input id="leaderKey" type="password" maxlength="4" placeholder="Sólo líderes"></label>
@@ -681,7 +692,7 @@ function completeOperationalLogin(){
     toast(phoneCheck.message);
     return false;
   }
-  if(isLeader(operator)&&leaderKey?.value!=='3331'){toast('Clave líder incorrecta.');return false;}
+  if((isLeader(operator)||state.loginShift!==scheduledShift())&&leaderKey?.value!=='3331'){toast('Clave líder incorrecta.');return false;}
   if(occupied().includes(post)){toast('El puesto seleccionado está ocupado en este turno');return false;}
   const workArea=isFieldSupervisor(operator)?'Supervisores de Calle':workAreaByPost[post]||operator.workAreas?.[0]||'General turno';
   state.active=isFieldSupervisor(operator)?'chat':state.active;
@@ -694,34 +705,35 @@ function completeOperationalLogin(){
 }
 function populateLogin(){
   bindAuthLoginControls();
-  const sh=$('shiftSelect'),op=$('operatorSelect'),po=$('postSelect'),leaderKey=$('leaderKey'),auto=scheduledShift();
-  const previousOperator=op?.value||'';
-  state.loginShift=auto;
-  if(sh){
-    sh.innerHTML=shifts.map(x=>`<option ${x===state.loginShift?'selected':''}>${x}</option>`).join('');
-    sh.value=state.loginShift;
-  }
-  const available=loginOperators();
-  op.innerHTML=available.map(o=>`<option value="${escapeHtml(o.name)}">${escapeHtml(o.leader?o.name+' · Líder de equipos':o.name)}</option>`).join('');
-  if(previousOperator&&available.some(o=>o.name===previousOperator))op.value=previousOperator;
-  else if(available[0])op.value=available[0].name;
+  const sh=$('shiftSelect'),op=$('operatorSelect'),po=$('postSelect'),leaderKey=$('leaderKey');
+  const auto=scheduledShift(),previousOperator=op?.value||'';
+  if(!shifts.includes(state.loginShift))state.loginShift=auto;
+  const refreshOperators=()=>{
+    const available=loginOperators();
+    op.innerHTML=available.map(o=>`<option value="${escapeHtml(o.name)}">${escapeHtml(o.leader?o.name+' · Líder de equipos':o.name)}</option>`).join('');
+    if(previousOperator&&available.some(o=>o.name===previousOperator))op.value=previousOperator;
+    else if(available[0])op.value=available[0].name;
+    refreshPosts();
+  };
   const refreshPosts=()=>{
-    const operator=loginOperators().find(o=>o.name===op.value)||available[0];
+    const available=loginOperators(),operator=available.find(o=>o.name===op.value)||available[0];
     fillLoginPhoneForOperator(operator);
     const options=loginPostOptions(operator),occ=occupied(),firstFree=options.find(p=>!occ.includes(p))||options[0]||'';
     po.innerHTML=options.map(p=>`<option ${occ.includes(p)?'disabled':''} ${p===firstFree?'selected':''}>${escapeHtml(p)}${occ.includes(p)?' · ocupado':''}</option>`).join('');
     updateSeat();
   };
-  op.onchange=()=>{
-    if(leaderKey)leaderKey.value='';
-    refreshPosts();
-  };
+  if(sh){
+    sh.innerHTML=shifts.map(x=>`<option ${x===state.loginShift?'selected':''}>${x}</option>`).join('');
+    sh.value=state.loginShift;
+    sh.onchange=()=>{state.loginShift=sh.value;if(leaderKey)leaderKey.value='';refreshOperators();};
+  }
+  op.onchange=()=>{if(leaderKey)leaderKey.value='';refreshPosts();};
   po.onchange=updateSeat;
   if(leaderKey)leaderKey.oninput=updateSeat;
-  refreshPosts();
+  refreshOperators();
   $('loginForm').onsubmit=e=>{e.preventDefault();completeOperationalLogin();};
 }
-function updateSeat(){const op=$('operatorSelect'),leaderKey=$('leaderKey'),leaderWrap=$('leaderKeyWrap'),post=$('postSelect')?.value.replace(' · ocupado','')||'',shift=state.loginShift,operator=loginOperators().find(o=>o.name===op?.value),locked=!!post&&occupied().includes(post),leaderSelected=isLeader(operator),blocked=leaderSelected&&leaderKey?.value!=='3331';if(leaderWrap)leaderWrap.classList.toggle('hidden',!leaderSelected);$('seatStatus').className=`seat-status ${locked||blocked?'danger':''}`;$('seatStatus').textContent=!operator?`No hay usuarios activos para el turno ${shift}.`:blocked?'⛔ Clave líder requerida.':locked?`⛔ Puesto ocupado en turno ${shift}. Seleccioná otro.`:`Puesto disponible para turno ${shift}`;$('loginButton').disabled=!operator||locked||blocked;}
+function updateSeat(){const op=$('operatorSelect'),leaderKey=$('leaderKey'),leaderWrap=$('leaderKeyWrap'),post=$('postSelect')?.value.replace(' · ocupado','')||'',shift=state.loginShift,auto=scheduledShift(),operator=loginOperators().find(o=>o.name===op?.value),locked=!!post&&occupied().includes(post),shiftChanged=shift!==auto,leaderSelected=isLeader(operator),needsLeaderKey=leaderSelected||shiftChanged,blocked=needsLeaderKey&&leaderKey?.value!=='3331';if(leaderWrap){leaderWrap.classList.toggle('hidden',!needsLeaderKey);const label=leaderWrap.childNodes[0];if(label)label.textContent=shiftChanged?'Clave líder para cambiar turno':'Clave líder';}const detail=shiftChanged?`Turno modificado manualmente desde ${auto} a ${shift}. `:'';$('seatStatus').className=`seat-status ${locked||blocked?'danger':''}`;$('seatStatus').textContent=!operator?`No hay usuarios activos para el turno ${shift}.`:blocked?`⛔ ${detail}Clave líder requerida.`:locked?`⛔ Puesto ocupado en turno ${shift}. Seleccioná otro.`:`${detail}Puesto disponible para turno ${shift}`;$('loginButton').disabled=!operator||locked||blocked;}
 function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden');const userForSession=activeOperators().find(o=>o.name===state.session?.operator)||state.operators.find(o=>o.name===state.session?.operator);if(isFieldSupervisor(userForSession))state.active='field';state.operators=state.operators.map(o=>o.name===state.session.operator?{...o,post:state.session.post,online:true}:o);state.currentWorkArea=state.session.workArea;updatePresence();document.querySelectorAll('.brand-mark').forEach(el=>el.textContent=state.session.avatar);$('sessionAvatar').textContent=state.session.avatar;$('sessionName').textContent=state.session.operator;$('sessionPost').textContent=`${state.session.post} · Turno ${state.session.shift}`;updateMiniContext();renderNav();subscribeTasks();subscribeMessages();subscribeQya();subscribeField();subscribePrivateMessages();processTaskNotifications();render();}
 function visibleNavItems(){const user=sessionOperator();if(isFieldSupervisor(user))return navItems.filter(([id])=>['chat','field'].includes(id));return navItems}
 function closeMobileMenu(){document.body.classList.remove('menu-open');$('sidebar')?.classList.remove('open')}
@@ -927,7 +939,7 @@ function bindPage(){const startRoute=$('startRoute'),stopRoute=$('stopRoute'),se
 async function sendMessage(){const input=$('messageInput');if(!input||(!input.value.trim()&&!state.pendingAttachments.length))return;if(!db){toast('Firebase no conectado: el mensaje NO se guardó en Firestore');console.warn('Intento de enviar mensaje sin conexión a Firestore. Revisá el estado Firebase de la barra superior y las reglas de Firestore.');return;}const createdAt=Date.now();const message={id:crypto.randomUUID(),operator:state.session.operator,post:state.session.post,text:input.value.trim(),attachments:[...state.pendingAttachments],createdAt,important:/!|crítico|critico/i.test(input.value)};try{if(state.privateTo){await db.collection('privateMessages').add({from:state.session.operator,to:state.privateTo,participants:[state.session.operator,state.privateTo],post:state.session.post,text:message.text,attachments:message.attachments,important:message.important,shift:state.session.shift,createdAtMs:createdAt});addActivity(`${state.session.operator} envió un mensaje privado a ${state.privateTo}.`)}else{await db.collection('messages').add({channel:state.currentChannel,audience:state.currentChannel==='General turno'?'all':state.currentChannel,operator:state.session.operator,post:state.session.post,text:message.text,attachments:message.attachments,important:message.important,shift:state.session.shift,createdAtMs:createdAt});addActivity(`${state.session.operator} envió un mensaje en ${state.currentChannel}.`)}}catch(e){console.warn('No se pudo guardar el mensaje',e);toast(`No se pudo guardar en Firestore: ${e.code||e.message||'error'}`);return;}input.value='';state.pendingAttachments=[];toast('Mensaje enviado');render();setTimeout(()=>{$('messageInput')?.focus();},0)}
 function toast(text){const id=crypto.randomUUID();state.notifications.unshift({id,text});renderToasts();setTimeout(()=>{state.notifications=state.notifications.filter(n=>n.id!==id);renderToasts();},4800);}
 function renderToasts(){$('toasts').innerHTML=state.notifications.slice(0,3).map(n=>`<div class="toast glass"><b>⚡</b><span>${escapeHtml(n.text)}</span></div>`).join('')}
-async function logout(){const leaving=state.session,current=currentUserDoc();if(state.fieldWatchId&&navigator.geolocation){navigator.geolocation.clearWatch(state.fieldWatchId);state.fieldWatchId=null;}if(leaving){state.operators=state.operators.map(o=>o.name===leaving.operator?{...o,online:false,onlineFlag:false,lastSeenMs:0,currentWorkArea:null}:o);if(db&&current?.id){try{await db.collection('users').doc(current.id).set({online:false,lastSeenMs:0,currentWorkArea:null,shift:leaving.shift},{merge:true})}catch(e){console.warn('No se pudo marcar offline en Firestore',e);}}addActivity(`${leaving.operator} liberó ${leaving.post}.`)}if(unsubPrivate){unsubPrivate();unsubPrivate=null;}document.body.classList.remove('field-mobile');clearFieldMapSession();state.currentRouteId=null;state.currentCoords=null;if(auth?.currentUser)auth.signOut().catch(e=>console.warn('No se pudo cerrar Firebase Auth',e));localStorage.removeItem('internamatutino-session');localStorage.removeItem('internamatutino-auth');state.authUser=null;state.session=null;$('app').classList.add('hidden');$('login').classList.remove('hidden');populateLogin();}
+async function logout(){const leaving=state.session,current=currentUserDoc();if(state.fieldWatchId&&navigator.geolocation){navigator.geolocation.clearWatch(state.fieldWatchId);state.fieldWatchId=null;}if(leaving){state.operators=state.operators.map(o=>o.name===leaving.operator?{...o,online:false,onlineFlag:false,lastSeenMs:0,currentWorkArea:null}:o);if(db&&current?.id){try{await db.collection('users').doc(current.id).set({online:false,lastSeenMs:0,currentWorkArea:null,shift:leaving.shift},{merge:true})}catch(e){console.warn('No se pudo marcar offline en Firestore',e);}}addActivity(`${leaving.operator} liberó ${leaving.post}.`)}if(unsubPrivate){unsubPrivate();unsubPrivate=null;}document.body.classList.remove('field-mobile');clearFieldMapSession();state.currentRouteId=null;state.currentCoords=null;if(auth?.currentUser)auth.signOut().catch(e=>console.warn('No se pudo cerrar Firebase Auth',e));localStorage.removeItem('internamatutino-session');localStorage.removeItem('internamatutino-auth');state.authUser=null;state.session=null;state.loginShift=scheduledShift();$('app').classList.add('hidden');$('login').classList.remove('hidden');populateLogin();}
 boot();
 </script>
 </body>
