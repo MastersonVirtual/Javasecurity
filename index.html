@@ -276,6 +276,73 @@ body{font-size:clamp(13px,1.05vw,15px);}
   .field-mobile .content{padding-bottom:calc(188px + env(safe-area-inset-bottom));}
 }
 
+
+/* Mobile supervisor-first login and polished field phone experience */
+@media(max-width:700px){
+  html,body{min-height:100%;}
+  body{overflow:auto;-webkit-overflow-scrolling:touch;}
+  .login-screen{display:block;min-height:100dvh;height:100dvh;overflow:auto;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 14px calc(180px + env(safe-area-inset-bottom));scroll-padding-bottom:180px;}
+  .login-card{width:100%;max-width:520px;margin:0 auto;padding:20px;border-radius:30px;gap:16px;box-shadow:0 26px 80px rgba(0,0,0,.45);}
+  .login-brand{gap:12px;align-items:center;}
+  .login-brand strong{font-size:1.12rem;line-height:1.05;}
+  .logo-xl{width:48px;height:48px;border-radius:17px;}
+  .login-card h1{font-size:clamp(2.35rem,13vw,3.8rem);line-height:.92;letter-spacing:-.07em;}
+  .login-divider{margin:8px 0;}
+  .login-grid{grid-template-columns:1fr!important;gap:12px;}
+  .login-card label{gap:8px;font-size:.92rem;}
+  .login-card input,.login-card select{min-height:56px;border-radius:20px;padding:15px 18px;font-size:1rem;}
+  .seat-status{min-height:54px;border-radius:20px;padding:14px 16px;line-height:1.35;}
+  .auth-panel{border-radius:28px;padding:18px;gap:16px;margin-bottom:44px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.025));}
+  .auth-heading{display:grid;gap:8px;}
+  .auth-heading strong{font-size:1.15rem;}
+  .auth-heading span{text-align:left;font-size:.95rem;line-height:1.45;}
+  .sms-panel{grid-template-columns:1fr!important;gap:12px;align-items:stretch;}
+  .sms-panel button{width:100%;min-height:54px;border-radius:18px;font-size:1rem;font-weight:950;}
+  #phoneAuthCode{letter-spacing:.18em;text-align:center;font-weight:950;}
+  .recaptcha-holder{min-height:1px;max-width:100%;overflow:hidden;}
+}
+@media(max-width:700px){
+  body.field-mobile{overflow:hidden;background:#061414;}
+  .field-mobile .shell{height:100dvh;min-height:100dvh;overflow:hidden;padding:0;background:linear-gradient(180deg,#062322,#061414 45%,#040b0d);}
+  .field-mobile .workspace{height:100dvh;min-height:0;display:flex;flex-direction:column;gap:10px;padding:10px 10px calc(142px + env(safe-area-inset-bottom))!important;overflow:hidden;}
+  .field-mobile .topbar{flex:0 0 auto;position:sticky;top:0;z-index:60;min-height:auto;padding:10px;border-radius:0 0 26px 26px;background:rgba(18,25,26,.94);backdrop-filter:blur(18px);}
+  .field-mobile .top-actions{margin-left:auto;}
+  .field-mobile .content{flex:1 1 auto;min-height:0;height:auto!important;overflow:auto!important;-webkit-overflow-scrolling:touch;padding:12px 0 calc(42px + env(safe-area-inset-bottom))!important;scroll-padding-bottom:170px;}
+  .field-mobile .field-titlebar{padding:18px 4px 14px;gap:14px;border-bottom-color:rgba(255,255,255,.08);}
+  .field-mobile .field-titlebar .field-title-left{align-items:flex-start;gap:12px;}
+  .field-mobile .field-titlebar .title-pin{font-size:2.1rem;line-height:1;}
+  .field-mobile .field-titlebar h2{font-size:clamp(1.75rem,9vw,2.55rem);line-height:1.02;}
+  .field-mobile .field-titlebar button{min-height:54px;border-radius:20px;font-size:1rem;}
+  .field-mobile .field-grid{display:block;}
+  .field-mobile .field-main,.field-mobile .field-side{min-width:0;width:100%;display:grid;gap:14px;}
+  .field-mobile .field-map-card,.field-mobile .field-side-card,.field-mobile .progress-card,.field-mobile .field-panel{border-radius:26px;padding:16px;background:linear-gradient(145deg,rgba(12,23,24,.96),rgba(6,14,16,.86));}
+  .field-mobile .field-map-card.realtime-card .field-map{height:min(48dvh,430px)!important;min-height:330px;border-radius:24px;}
+  .field-mobile .field-map-wrap{border-radius:24px;}
+  .field-mobile .map-tabs{top:12px;left:12px;border-radius:18px;padding:6px;}
+  .field-mobile .map-tabs button{padding:12px 18px;border-radius:14px;font-size:.98rem;}
+  .field-mobile .map-tools{right:12px;bottom:12px;gap:10px;}
+  .field-mobile .map-tools button{width:48px;height:48px;border-radius:16px;}
+  .field-mobile .gps-strip{grid-template-columns:1fr;border-radius:0 0 22px 22px;}
+  .field-mobile .gps-strip div{border-right:0;border-bottom:1px solid rgba(255,255,255,.06);padding:13px 14px;}
+  .field-mobile .gps-strip div:last-child{border-bottom:0;}
+  .field-mobile .point-list{max-height:none;overflow:visible;}
+  .field-mobile .point-row{display:grid;grid-template-columns:44px minmax(0,1fr) 68px auto;gap:10px;align-items:center;padding:14px 0;}
+  .field-mobile .point-row b,.field-mobile .point-row span{min-width:0;overflow-wrap:anywhere;}
+  .field-mobile .point-row img{width:64px;height:48px;border-radius:12px;object-fit:cover;}
+  .field-mobile .field-actions{display:grid;grid-template-columns:1fr;gap:10px;}
+  .field-mobile .field-actions button,.field-mobile .field-card button{min-height:50px;border-radius:18px;font-weight:950;}
+  .field-mobile .sidebar{left:12px!important;right:12px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;width:auto!important;max-height:178px!important;overflow:auto!important;border-radius:28px!important;padding:14px!important;background:rgba(18,24,25,.94)!important;backdrop-filter:blur(18px)!important;box-shadow:0 -18px 60px rgba(0,0,0,.48)!important;}
+  .field-mobile .nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+  .field-mobile .nav button{min-height:58px!important;border-radius:20px!important;justify-content:center!important;font-size:1rem!important;}
+  .field-mobile .logout{min-height:54px!important;border-radius:20px!important;margin-top:10px!important;font-size:1rem!important;}
+}
+@media(max-width:380px){
+  .login-card{padding:16px;border-radius:26px;}
+  .field-mobile .workspace{padding-left:8px!important;padding-right:8px!important;}
+  .field-mobile .field-map-card.realtime-card .field-map{min-height:300px;}
+  .field-mobile .point-row{grid-template-columns:40px minmax(0,1fr) 58px auto;}
+}
+
 </style>
 </head>
 <body>
@@ -668,7 +735,8 @@ const currentShift=()=>state.session?.shift||state.loginShift||'Día';
 const itemShift=item=>item?.shift||'Día';
 const sameShift=item=>itemShift(item)===currentShift();
 const activeOperators=()=>state.operators.filter(o=>o.active!==false&&visibleUser(o)&&sameShift(o));
-const loginOperators=()=>state.operators.filter(o=>o.active!==false&&visibleUser(o)&&itemShift(o)===state.loginShift);
+const mobileSupervisorLogin=()=>typeof window!=='undefined'&&window.matchMedia?.('(max-width: 700px)').matches;
+const loginOperators=()=>state.operators.filter(o=>o.active!==false&&visibleUser(o)&&(mobileSupervisorLogin()?isFieldSupervisor(o):itemShift(o)===state.loginShift));
 const loginPostOptions=operator=>isFieldSupervisor(operator)?[operator.post||'Supervisor de calle']:posts;
 const occupied=()=>activeOperators().filter(o=>o.online).map(o=>o.post);
 const pendingTasks=()=>state.tasks.filter(t=>t.status==='Pendiente');
@@ -712,9 +780,10 @@ function populateLogin(){
   const auto=scheduledShift(),previousOperator=op?.value||'';
   if(!shifts.includes(state.loginShift))state.loginShift=auto;
   const refreshOperators=()=>{
-    const available=loginOperators();
+    const available=loginOperators(),supervisor=available.find(isFieldSupervisor);
     op.innerHTML=available.map(o=>`<option value="${escapeHtml(o.name)}">${escapeHtml(o.leader?o.name+' · Líder de equipos':o.name)}</option>`).join('');
-    if(previousOperator&&available.some(o=>o.name===previousOperator))op.value=previousOperator;
+    if(mobileSupervisorLogin()&&supervisor)op.value=supervisor.name;
+    else if(previousOperator&&available.some(o=>o.name===previousOperator))op.value=previousOperator;
     else if(available[0])op.value=available[0].name;
     refreshPosts();
   };
