@@ -1,1 +1,940 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Presupuestos Masterson Mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+ 
+<style>
+  :root{
+    --bg:#0a0e1c;
+    --card:#121a2e;
+    --input:#1a2340;
+    --btn:#b99b56;
+    --btn-hover:#d8c48a;
+    --deep:#16213d;
+    --deep-light:#22315a;
+    --text:#f3f1e8;
+    --text-dim:#96988a;
+    --border:rgba(217,196,140,0.10);
+    --danger:#d98a8a;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+ 
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+ 
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:none;
+    width:100%;
+    max-width:100vw;
+    overflow-x:hidden;
+  }
+ 
+  body{
+    padding-bottom: calc(112px + var(--safe-bottom));
+  }
+ 
+  ::selection{ background:var(--btn); color:#1c1600; }
+ 
+  button{ font-family:inherit; border:none; cursor:pointer; -webkit-appearance:none; appearance:none; }
+  input, select, textarea{ font-family:inherit; }
+ 
+  /* ---------- Header ---------- */
+  .app-header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:calc(20px + var(--safe-top)) 20px 16px;
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:linear-gradient(180deg, var(--bg) 70%, rgba(10,14,28,0.85) 100%);
+    backdrop-filter:blur(10px);
+  }
+ 
+  .app-header img{
+    width:40px;
+    height:40px;
+    border-radius:11px;
+    object-fit:cover;
+    box-shadow:0 4px 14px rgba(0,0,0,0.35);
+  }
+ 
+  .app-header .titles{ display:flex; flex-direction:column; line-height:1.15; }
+  .app-header .titles .brand{ font-family:'Source Serif 4', serif; font-size:15px; font-weight:700; letter-spacing:0.2px; }
+  .app-header .titles .sub{ font-size:12px; color:var(--text-dim); font-weight:500; }
+ 
+  .app-header .badge{
+    margin-left:auto;
+    font-size:11px;
+    font-weight:600;
+    color:var(--btn);
+    background:rgba(185,155,86,0.10);
+    border:1px solid rgba(185,155,86,0.25);
+    padding:6px 10px;
+    border-radius:100px;
+    white-space:nowrap;
+  }
+ 
+  /* ---------- Layout ---------- */
+  .screen{ padding:4px 20px 20px; display:flex; flex-direction:column; gap:16px; }
+ 
+  .section-label{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin:10px 2px 0;
+  }
+ 
+  .card{
+    background:var(--card);
+    border-radius:20px;
+    padding:18px;
+    border:1px solid var(--border);
+    box-shadow:0 10px 30px -14px rgba(0,0,0,0.6);
+  }
+ 
+  .field{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .field:last-child{ margin-bottom:0; }
+ 
+  .field label{ font-size:13px; font-weight:600; color:var(--text-dim); }
+ 
+  .field input,
+  .field select,
+  .field textarea{
+    background:var(--input);
+    border:1px solid rgba(217,196,140,0.06);
+    color:var(--text);
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:16px;
+    font-weight:500;
+    width:100%;
+    outline:none;
+    transition:border-color .18s ease, box-shadow .18s ease, transform .12s ease;
+  }
+ 
+  .field textarea{ resize:none; min-height:88px; line-height:1.4; }
+ 
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus{
+    border-color:var(--btn);
+    box-shadow:0 0 0 4px rgba(185,155,86,0.14);
+  }
+ 
+  .field input::placeholder,
+  .field textarea::placeholder{ color:#6f7263; }
+ 
+  .field-row{ display:flex; gap:12px; }
+  .field-row .field{ flex:1; margin-bottom:0; }
+ 
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' stroke='%23d8c48a' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 16px center;
+    padding-right:40px;
+  }
+ 
+  /* ---------- Buttons ---------- */
+  .btn-primary{
+    background:var(--btn);
+    color:#1c1600;
+    font-weight:700;
+    font-size:15.5px;
+    padding:16px;
+    border-radius:16px;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:background .18s ease, transform .1s ease, box-shadow .18s ease;
+    box-shadow:0 8px 20px -8px rgba(185,155,86,0.35);
+  }
+  .btn-primary:hover{ background:var(--btn-hover); }
+  .btn-primary:active{ transform:scale(0.97); }
+  .btn-primary:disabled{ opacity:0.55; pointer-events:none; }
+ 
+  .btn-ghost{
+    background:rgba(185,155,86,0.08);
+    color:var(--btn);
+    font-weight:600;
+    font-size:14.5px;
+    padding:10px 14px;
+    border-radius:12px;
+    transition:background .18s ease, transform .1s ease;
+  }
+  .btn-ghost:hover{ background:rgba(185,155,86,0.16); }
+  .btn-ghost:active{ transform:scale(0.96); }
+ 
+  .add-item-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:100%;
+    padding:16px;
+    border-radius:16px;
+    background:rgba(185,155,86,0.08);
+    border:1.5px dashed rgba(185,155,86,0.35);
+    color:var(--btn);
+    font-weight:700;
+    font-size:15px;
+    transition:background .18s ease, border-color .18s ease, transform .1s ease;
+  }
+  .add-item-btn:hover{ background:rgba(185,155,86,0.15); border-color:var(--btn-hover); }
+  .add-item-btn:active{ transform:scale(0.98); }
+ 
+  /* ---------- Items list ---------- */
+  .item-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    padding:14px 0;
+    border-bottom:1px solid var(--border);
+    animation:itemIn .28s ease;
+  }
+  .item-row:last-child{ border-bottom:none; padding-bottom:2px; }
+  .item-row:first-child{ padding-top:2px; }
+ 
+  @keyframes itemIn{
+    from{ opacity:0; transform:translateY(6px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+ 
+  .item-info{ display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }
+  .item-info .desc{ font-size:14.5px; font-weight:700; }
+  .item-info .detail{ font-size:13px; color:var(--text-dim); }
+  .item-info .qty{ font-size:12.5px; color:var(--btn); font-weight:600; margin-top:2px; }
+  .item-info .amount{ font-size:13px; color:var(--text-dim); font-weight:600; margin-top:1px; }
+ 
+  .item-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .icon-btn{
+    width:32px; height:32px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.04);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim);
+    transition:background .15s ease, color .15s ease, transform .1s ease;
+  }
+  .icon-btn:hover{ background:rgba(255,255,255,0.08); color:var(--text); }
+  .icon-btn.danger:hover{ color:var(--danger); background:rgba(217,138,138,0.12); }
+  .icon-btn:active{ transform:scale(0.9); }
+ 
+  .empty-items{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:13.5px;
+    padding:18px 6px;
+  }
+ 
+  /* ---------- Totals card (en flujo) ---------- */
+  .totals-row{ display:flex; justify-content:space-between; align-items:center; font-size:14px; padding:6px 0; color:var(--text-dim); font-weight:500; }
+  .totals-row.total{ color:var(--text); font-size:19px; font-weight:800; border-top:1px solid var(--border); margin-top:6px; padding-top:14px; }
+  .totals-row.total span:last-child{ color:var(--btn); }
+  .totals-row span:last-child{ font-variant-numeric:tabular-nums; }
+ 
+  /* ---------- Fixed bottom action bar ---------- */
+  .action-bar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:30;
+    padding:12px 16px calc(14px + var(--safe-bottom));
+    background:linear-gradient(180deg, rgba(10,14,28,0) 0%, var(--bg) 28%);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .action-bar .row{ display:flex; gap:8px; }
+  .action-bar .row .btn-ghost{ flex:1; text-align:center; }
+ 
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(6,7,4,0.62);
+    backdrop-filter:blur(4px);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:50;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .22s ease;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+ 
+  .modal-sheet{
+    background:var(--card);
+    width:100%;
+    max-width:520px;
+    border-radius:26px 26px 0 0;
+    padding:10px 20px calc(24px + var(--safe-bottom));
+    transform:translateY(100%);
+    transition:transform .28s cubic-bezier(.32,.72,.35,1);
+    box-shadow:0 -12px 40px rgba(0,0,0,0.5);
+    max-height:88vh;
+    overflow-y:auto;
+    border-top:1px solid var(--border);
+  }
+  .modal-overlay.open .modal-sheet{ transform:translateY(0); }
+ 
+  .modal-handle{
+    width:40px; height:4px;
+    background:rgba(217,196,140,0.2);
+    border-radius:100px;
+    margin:8px auto 14px;
+  }
+ 
+  .modal-title{ font-family:'Source Serif 4', serif; font-size:18px; font-weight:700; margin-bottom:16px; }
+ 
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;
+    top: calc(16px + var(--safe-top));
+    left:50%;
+    transform:translate(-50%, -20px);
+    background:var(--btn);
+    color:#1c1600;
+    font-weight:700;
+    font-size:13.5px;
+    padding:12px 18px;
+    border-radius:100px;
+    box-shadow:0 10px 24px -8px rgba(0,0,0,0.5);
+    z-index:60;
+    opacity:0;
+    transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%, 0); }
+ 
+  @media (min-width:480px){
+    .screen{ max-width:480px; margin:0 auto; }
+    .app-header{ max-width:480px; margin:0 auto; width:100%; }
+    .action-bar{ max-width:480px; margin:0 auto; left:0; right:0; }
+  }
+</style>
+</head>
+<body>
+ 
+  <!-- ===================== HEADER ===================== -->
+  <header class="app-header">
+    <img src="./assets/JAVAd1556956-80fe-4124-89e2-f963670c8e0c.png" alt="Masterson">
+    <div class="titles">
+      <span class="brand">Masterson</span>
+      <span class="sub">Nuevo presupuesto</span>
+    </div>
+    <span class="badge" id="folioBadge">N° ----</span>
+  </header>
+ 
+  <main class="screen">
+ 
+    <!-- ===================== DATOS DEL CLIENTE ===================== -->
+    <div class="section-label">Cliente</div>
+    <div class="card">
+      <div class="field">
+        <label for="cliente">Cliente</label>
+        <input id="cliente" type="text" placeholder="Nombre y apellido">
+      </div>
+      <div class="field">
+        <label for="direccion">Dirección</label>
+        <input id="direccion" type="text" placeholder="Calle, número, ciudad">
+      </div>
+      <div class="field">
+        <label for="tipoTrabajo">Tipo de trabajo</label>
+        <select id="tipoTrabajo">
+          <option value="">Seleccionar…</option>
+          <option value="instalacion">Instalación</option>
+          <option value="reparacion">Reparación</option>
+          <option value="agregado">Agregado</option>
+          <option value="cambio">Cambio</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" placeholder="Descripción general del trabajo"></textarea>
+      </div>
+      <div class="field">
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" placeholder="Observaciones adicionales (opcional)"></textarea>
+      </div>
+    </div>
+ 
+    <!-- ===================== ITEMS ===================== -->
+    <div class="section-label">Ítems del presupuesto</div>
+    <div class="card">
+      <button class="add-item-btn" id="openModalBtn" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        Agregar ítem
+      </button>
+      <div id="itemsList" style="margin-top:6px;">
+        <div class="empty-items" id="emptyItemsMsg">Todavía no agregaste ítems.</div>
+      </div>
+    </div>
+ 
+    <!-- ===================== TOTALES ===================== -->
+    <div class="section-label">Resumen</div>
+    <div class="card">
+      <div class="totals-row"><span>Subtotal</span><span id="subtotalPreview">$0</span></div>
+      <div class="totals-row"><span>IVA (<span id="ivaPct">22</span>%)</span><span id="ivaPreview">$0</span></div>
+      <div class="totals-row total"><span>Total</span><span id="totalPreview">$0</span></div>
+    </div>
+ 
+  </main>
+ 
+  <!-- ===================== BARRA DE ACCIONES FIJA ===================== -->
+  <div class="action-bar">
+    <div class="row">
+      <button class="btn-ghost" id="btnBorrador" type="button">Guardar borrador</button>
+      <button class="btn-ghost" id="btnPreview" type="button">Vista previa</button>
+    </div>
+    <button class="btn-primary" id="btnPDF" type="button">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      <span id="btnPDFLabel">Generar PDF</span>
+    </button>
+  </div>
+ 
+  <!-- ===================== MODAL: AGREGAR ÍTEM ===================== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Agregar ítem</div>
+      <div class="field">
+        <label for="itemDesc">Descripción</label>
+        <input id="itemDesc" type="text" placeholder="Ej: Instalación de cámara">
+      </div>
+      <div class="field">
+        <label for="itemDetalle">Detalle</label>
+        <textarea id="itemDetalle" placeholder="Detalle adicional (opcional)"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="itemCantidad">Cantidad</label>
+          <input id="itemCantidad" type="number" min="1" step="1" placeholder="1">
+        </div>
+        <div class="field">
+          <label for="itemPrecio">Precio unitario</label>
+          <input id="itemPrecio" type="number" min="0" step="1" placeholder="0">
+        </div>
+      </div>
+      <button class="btn-primary" id="confirmAddItem" type="button" style="margin-top:18px;">Agregar</button>
+    </div>
+  </div>
+ 
+  <!-- ===================== TOAST ===================== -->
+  <div class="toast" id="toast"></div>
+ 
+<script>
+(function(){
+ 
+  /* =====================================================================
+     CONSTANTES DE LA EMPRESA (por ahora fijas — luego vendrán de Firestore)
+     TODO(Firebase Firestore): reemplazar este objeto por una lectura del
+     documento de configuración de la empresa, ej: db.collection('config').doc('masterson')
+  ===================================================================== */
+  const EMPRESA = {
+    nombre: "Masterson Seguridad",
+    subtitulo: "Virtual Group Uruguay",
+    rut: "21.123.456-7",
+    direccion: "Av. Ejemplo 1234, Maldonado, Uruguay",
+    telefono: "+598 99 123 456",
+    correo: "contacto@masterson.com.uy",
+    moneda: "UYU",
+    validezDias: 30,
+    iva: 22,
+    piePagina: "Masterson Seguridad | Virtual Group Uruguay | Documento confidencial",
+    firma: "Masterson Seguridad — Instalaciones y Servicios"
+  };
+ 
+  const COLOR = {
+    azulOscuro: [16, 33, 61],
+    azulClaro: [34, 49, 90],
+    dorado: [185, 155, 86],
+    textoOscuro: [40, 42, 34],
+    grisClaro: [245, 244, 238],
+    blanco: [255, 255, 255]
+  };
+ 
+  /* =====================================================================
+     TODO(Firebase Authentication): validar sesión del usuario único antes
+     de permitir el acceso a esta pantalla, ej: firebase.auth().onAuthStateChanged(...)
+  ===================================================================== */
+ 
+  /* =====================================================================
+     TODO(Firebase Firestore): el número de presupuesto debe generarse a
+     partir de un contador incremental guardado en Firestore, no localmente.
+  ===================================================================== */
+  function generarNumeroPresupuesto(){
+    const year = new Date().getFullYear();
+    const random = String(Math.floor(1 + Math.random() * 999)).padStart(3, '0');
+    return `MAST-${year}-${random}`;
+  }
+ 
+  function formatFechaHoy(){
+    const hoy = new Date();
+    return hoy.toLocaleDateString('es-UY', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+ 
+  const TIPO_TRABAJO_LABEL = {
+    instalacion: 'Instalación',
+    reparacion: 'Reparación',
+    agregado: 'Agregado',
+    cambio: 'Cambio',
+    otro: 'Otro'
+  };
+ 
+  const state = {
+    folio: generarNumeroPresupuesto(),
+    fecha: formatFechaHoy(),
+    items: [] // { id, descripcion, detalle, cantidad, precioUnitario }
+  };
+ 
+  /* ---------- Referencias DOM ---------- */
+  const $ = (id) => document.getElementById(id);
+ 
+  const folioBadge = $('folioBadge');
+  const itemsList = $('itemsList');
+  const emptyItemsMsg = $('emptyItemsMsg');
+  const subtotalPreview = $('subtotalPreview');
+  const ivaPreview = $('ivaPreview');
+  const totalPreview = $('totalPreview');
+  const ivaPctLabel = $('ivaPct');
+ 
+  const modalOverlay = $('modalOverlay');
+  const openModalBtn = $('openModalBtn');
+  const confirmAddItem = $('confirmAddItem');
+  const itemDesc = $('itemDesc');
+  const itemDetalle = $('itemDetalle');
+  const itemCantidad = $('itemCantidad');
+  const itemPrecio = $('itemPrecio');
+ 
+  const toast = $('toast');
+ 
+  let editingItemId = null;
+ 
+  /* ---------- Datos automáticos (no se muestran en pantalla, se usan en el PDF) ---------- */
+  function inicializarBadge(){
+    folioBadge.textContent = `N° ${state.folio}`;
+    ivaPctLabel.textContent = EMPRESA.iva;
+  }
+ 
+  /* ---------- Formato de moneda ---------- */
+  function formatMoneda(valor){
+    return `$${valor.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`;
+  }
+ 
+  function calcularTotales(){
+    const subtotal = state.items.reduce((acc, item) => acc + (item.cantidad * item.precioUnitario), 0);
+    const iva = subtotal * (EMPRESA.iva / 100);
+    const total = subtotal + iva;
+    return { subtotal, iva, total };
+  }
+ 
+  function actualizarTotales(){
+    const { subtotal, iva, total } = calcularTotales();
+    subtotalPreview.textContent = formatMoneda(subtotal);
+    ivaPreview.textContent = formatMoneda(iva);
+    totalPreview.textContent = formatMoneda(total);
+  }
+ 
+  /* ---------- Render de items ---------- */
+  function renderItems(){
+    itemsList.innerHTML = '';
+ 
+    if(state.items.length === 0){
+      itemsList.appendChild(emptyItemsMsg);
+      emptyItemsMsg.style.display = 'block';
+      actualizarTotales();
+      return;
+    }
+ 
+    emptyItemsMsg.style.display = 'none';
+ 
+    state.items.forEach((item) => {
+      const importe = item.cantidad * item.precioUnitario;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <div class="item-info">
+          <span class="desc">${escapeHtml(item.descripcion)}</span>
+          ${item.detalle ? `<span class="detail">${escapeHtml(item.detalle)}</span>` : ''}
+          <span class="qty">Cantidad: ${item.cantidad} · Precio unit.: ${formatMoneda(item.precioUnitario)}</span>
+          <span class="amount">Importe: ${formatMoneda(importe)}</span>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" data-action="edit" data-id="${item.id}" type="button" aria-label="Editar ítem">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn danger" data-action="delete" data-id="${item.id}" type="button" aria-label="Eliminar ítem">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0v13a1 1 0 001 1h8a1 1 0 001-1V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      `;
+      itemsList.appendChild(row);
+    });
+ 
+    actualizarTotales();
+  }
+ 
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+ 
+  /* ---------- Modal ---------- */
+  function abrirModal(){
+    editingItemId = null;
+    itemDesc.value = '';
+    itemDetalle.value = '';
+    itemCantidad.value = '';
+    itemPrecio.value = '';
+    modalOverlay.classList.add('open');
+    setTimeout(() => itemDesc.focus(), 250);
+  }
+ 
+  function abrirModalEdicion(item){
+    editingItemId = item.id;
+    itemDesc.value = item.descripcion;
+    itemDetalle.value = item.detalle || '';
+    itemCantidad.value = item.cantidad;
+    itemPrecio.value = item.precioUnitario;
+    modalOverlay.classList.add('open');
+  }
+ 
+  function cerrarModal(){
+    modalOverlay.classList.remove('open');
+  }
+ 
+  openModalBtn.addEventListener('click', abrirModal);
+ 
+  modalOverlay.addEventListener('click', (e) => {
+    if(e.target === modalOverlay) cerrarModal();
+  });
+ 
+  confirmAddItem.addEventListener('click', () => {
+    const descripcion = itemDesc.value.trim();
+    const detalle = itemDetalle.value.trim();
+    const cantidad = parseInt(itemCantidad.value, 10);
+    const precioUnitario = parseFloat(itemPrecio.value);
+ 
+    if(!descripcion){
+      mostrarToast('Ingresá una descripción');
+      itemDesc.focus();
+      return;
+    }
+    if(!cantidad || cantidad < 1){
+      mostrarToast('Ingresá una cantidad válida');
+      itemCantidad.focus();
+      return;
+    }
+    if(isNaN(precioUnitario) || precioUnitario < 0){
+      mostrarToast('Ingresá un precio unitario válido');
+      itemPrecio.focus();
+      return;
+    }
+ 
+    if(editingItemId){
+      const item = state.items.find(i => i.id === editingItemId);
+      item.descripcion = descripcion;
+      item.detalle = detalle;
+      item.cantidad = cantidad;
+      item.precioUnitario = precioUnitario;
+      mostrarToast('Ítem actualizado');
+    } else {
+      state.items.push({
+        id: `item_${Date.now()}`,
+        descripcion,
+        detalle,
+        cantidad,
+        precioUnitario
+      });
+      mostrarToast('Ítem agregado');
+    }
+ 
+    renderItems();
+    cerrarModal();
+  });
+ 
+  itemsList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    const item = state.items.find(i => i.id === id);
+    if(!item) return;
+ 
+    if(action === 'delete'){
+      state.items = state.items.filter(i => i.id !== id);
+      renderItems();
+      mostrarToast('Ítem eliminado');
+    } else if(action === 'edit'){
+      abrirModalEdicion(item);
+    }
+  });
+ 
+  /* ---------- Toast ---------- */
+  let toastTimeout;
+  function mostrarToast(mensaje){
+    clearTimeout(toastTimeout);
+    toast.textContent = mensaje;
+    toast.classList.add('show');
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+ 
+  /* =====================================================================
+     TODO(Firebase Firestore): "Guardar borrador" debe escribir el estado
+     actual del presupuesto (cliente, items, totales) en una colección
+     de borradores, ej: db.collection('presupuestos').doc(state.folio).set({...})
+  ===================================================================== */
+  $('btnBorrador').addEventListener('click', () => {
+    mostrarToast('Borrador guardado');
+  });
+ 
+  /* =====================================================================
+     TODO: la vista previa podría reutilizar construirDocumentoPDF() y
+     abrir el resultado con doc.output('dataurlnewwindow') en lugar de
+     descargarlo directamente.
+  ===================================================================== */
+  $('btnPreview').addEventListener('click', () => {
+    if(state.items.length === 0){
+      mostrarToast('Agregá al menos un ítem');
+      return;
+    }
+    const doc = construirDocumentoPDF();
+    doc.output('dataurlnewwindow');
+  });
+ 
+  /* =====================================================================
+     GENERACIÓN Y DESCARGA AUTOMÁTICA DEL PDF
+     TODO(Firebase Storage): además de descargar el PDF en el dispositivo,
+     subir el blob resultante a Storage, ej:
+     const blob = doc.output('blob'); storageRef.child(`presupuestos/${state.folio}.pdf`).put(blob)
+  ===================================================================== */
+  function construirDocumentoPDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 40;
+    let y = 0;
+ 
+    /* ---- Encabezado ---- */
+    doc.setFillColor(...COLOR.azulOscuro);
+    doc.rect(0, 0, pageWidth, 70, 'F');
+    doc.setDrawColor(...COLOR.dorado);
+    doc.setLineWidth(2);
+    doc.line(0, 70, pageWidth, 70);
+ 
+    doc.setTextColor(...COLOR.blanco);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(17);
+    doc.text(EMPRESA.nombre.toUpperCase(), margin, 32);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(EMPRESA.subtitulo, margin, 48);
+ 
+    doc.setTextColor(...COLOR.dorado);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('PRESUPUESTO', pageWidth - margin, 30, { align: 'right' });
+    doc.setTextColor(...COLOR.blanco);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.text(`Fecha: ${state.fecha}`, pageWidth - margin, 46, { align: 'right' });
+ 
+    y = 96;
+ 
+    /* ---- Tabla de datos generales ---- */
+    const tipoTrabajoTexto = TIPO_TRABAJO_LABEL[$('tipoTrabajo').value] || '—';
+    const clienteTexto = $('cliente').value.trim() || '—';
+    const direccionTexto = $('direccion').value.trim() || '—';
+ 
+    doc.autoTable({
+      startY: y,
+      margin: { left: margin, right: margin },
+      theme: 'plain',
+      styles: { fontSize: 9.5, cellPadding: 6, lineColor: [225, 222, 208], lineWidth: 0.5 },
+      body: [
+        [{ content: 'N° Presupuesto:', styles: { fontStyle: 'bold' } }, state.folio,
+         { content: 'Vigencia:', styles: { fontStyle: 'bold' } }, `${EMPRESA.validezDias} días`],
+        [{ content: 'Cliente:', styles: { fontStyle: 'bold' } }, clienteTexto,
+         { content: 'Moneda:', styles: { fontStyle: 'bold' } }, EMPRESA.moneda],
+        [{ content: 'Dirección:', styles: { fontStyle: 'bold' } }, direccionTexto,
+         { content: 'Tipo de trabajo:', styles: { fontStyle: 'bold' } }, tipoTrabajoTexto]
+      ],
+      columnStyles: {
+        0: { cellWidth: 90 }, 1: { cellWidth: 155 },
+        2: { cellWidth: 90 }, 3: { cellWidth: 'auto' }
+      },
+      alternateRowStyles: { fillColor: COLOR.grisClaro }
+    });
+ 
+    y = doc.lastAutoTable.finalY + 22;
+ 
+    /* ---- Descripción general (si existe) ---- */
+    const descripcionTexto = $('descripcion').value.trim();
+    if(descripcionTexto){
+      doc.setTextColor(...COLOR.azulOscuro);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('DESCRIPCIÓN DEL TRABAJO', margin, y);
+      doc.setDrawColor(...COLOR.dorado);
+      doc.setLineWidth(1);
+      doc.line(margin, y + 5, pageWidth - margin, y + 5);
+      y += 20;
+      doc.setTextColor(...COLOR.textoOscuro);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      const lineas = doc.splitTextToSize(descripcionTexto, pageWidth - margin * 2);
+      doc.text(lineas, margin, y);
+      y += lineas.length * 12 + 14;
+    }
+ 
+    /* ---- Tabla de ítems ---- */
+    const filasItems = state.items.map((item, i) => [
+      String(i + 1).padStart(2, '0'),
+      item.descripcion,
+      item.detalle || '—',
+      String(item.cantidad),
+      formatMoneda(item.precioUnitario),
+      formatMoneda(item.cantidad * item.precioUnitario)
+    ]);
+ 
+    doc.autoTable({
+      startY: y,
+      margin: { left: margin, right: margin },
+      head: [['Ítem', 'Descripción', 'Detalle', 'Cant.', 'P. Unit.', 'Importe']],
+      body: filasItems,
+      styles: { fontSize: 9, cellPadding: 7, lineColor: [225, 222, 208], lineWidth: 0.5, textColor: COLOR.textoOscuro },
+      headStyles: { fillColor: COLOR.azulOscuro, textColor: COLOR.blanco, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: COLOR.grisClaro },
+      columnStyles: {
+        0: { cellWidth: 32, halign: 'center' },
+        3: { cellWidth: 40, halign: 'center' },
+        4: { cellWidth: 65, halign: 'right' },
+        5: { cellWidth: 65, halign: 'right' }
+      }
+    });
+ 
+    y = doc.lastAutoTable.finalY + 22;
+ 
+    /* ---- Observaciones ---- */
+    const observacionesTexto = $('observaciones').value.trim();
+    if(observacionesTexto){
+      doc.setTextColor(...COLOR.azulOscuro);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.text('OBSERVACIONES', margin, y);
+      y += 14;
+      doc.setTextColor(...COLOR.textoOscuro);
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      observacionesTexto.split('\n').forEach(linea => {
+        const lineasSplit = doc.splitTextToSize(`• ${linea}`, pageWidth - margin * 2);
+        doc.text(lineasSplit, margin, y);
+        y += lineasSplit.length * 12;
+      });
+      y += 12;
+    }
+ 
+    /* ---- Resumen de costos ---- */
+    const { subtotal, iva, total } = calcularTotales();
+ 
+    doc.setTextColor(...COLOR.azulOscuro);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.text('RESUMEN DE COSTOS', margin, y);
+    y += 10;
+ 
+    doc.autoTable({
+      startY: y,
+      margin: { left: margin, right: margin },
+      head: [['Concepto', 'Monto']],
+      body: [
+        ['Subtotal', `${formatMoneda(subtotal)} ${EMPRESA.moneda}`],
+        [`IVA (${EMPRESA.iva}%)`, `${formatMoneda(iva)} ${EMPRESA.moneda}`]
+      ],
+      styles: { fontSize: 9.5, cellPadding: 7, textColor: COLOR.textoOscuro },
+      headStyles: { fillColor: COLOR.azulOscuro, textColor: COLOR.blanco, fontStyle: 'bold' },
+      columnStyles: { 1: { halign: 'right' } },
+      tableWidth: pageWidth - margin * 2
+    });
+ 
+    y = doc.lastAutoTable.finalY + 14;
+ 
+    doc.setDrawColor(...COLOR.dorado);
+    doc.setLineWidth(1.2);
+    doc.setFillColor(...COLOR.grisClaro);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 34, 4, 4, 'FD');
+    doc.setTextColor(...COLOR.azulOscuro);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('TOTAL (IVA incluido):', margin + 14, y + 22);
+    doc.setTextColor(...COLOR.dorado);
+    doc.text(`${formatMoneda(total)} ${EMPRESA.moneda}`, pageWidth - margin - 14, y + 22, { align: 'right' });
+ 
+    /* ---- Pie de página ---- */
+    doc.setFillColor(...COLOR.azulOscuro);
+    doc.rect(0, pageHeight - 34, pageWidth, 34, 'F');
+    doc.setTextColor(...COLOR.blanco);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.text(EMPRESA.piePagina, pageWidth / 2, pageHeight - 16, { align: 'center' });
+ 
+    return doc;
+  }
+ 
+  $('btnPDF').addEventListener('click', () => {
+    if(state.items.length === 0){
+      mostrarToast('Agregá al menos un ítem antes de generar el PDF');
+      return;
+    }
+    const btnLabel = $('btnPDFLabel');
+    const original = btnLabel.textContent;
+    btnLabel.textContent = 'Generando…';
+    $('btnPDF').disabled = true;
+ 
+    setTimeout(() => {
+      try{
+        const doc = construirDocumentoPDF();
+        doc.save(`Presupuesto_${state.folio}.pdf`);
+        mostrarToast('PDF descargado');
+      }catch(err){
+        console.error(err);
+        mostrarToast('No se pudo generar el PDF');
+      }finally{
+        btnLabel.textContent = original;
+        $('btnPDF').disabled = false;
+      }
+    }, 150);
+  });
+ 
+  /* ---- Init ---- */
+  inicializarBadge();
+  renderItems();
+ 
+})();
+</script>
+ 
+</body>
+</html>
+ 
