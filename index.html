@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Presupuestos Masterson Mobile</title>
+<title>Presupuestos Java Security Mobile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
@@ -336,7 +336,7 @@
  
   <!-- ===================== HEADER ===================== -->
   <header class="app-header">
-    <img src="./assets/JAVAd1556956-80fe-4124-89e2-f963670c8e0c.png" alt="Masterson">
+    <img src="./assets/JAVAd1556956-80fe-4124-89e2-f963670c8e0c.png" alt="Java Security">
     <div class="titles">
       <span class="brand">Java Security</span>
       <span class="sub">Nuevo presupuesto</span>
@@ -451,7 +451,7 @@
      documento de configuración de la empresa, ej: db.collection('config').doc('masterson')
   ===================================================================== */
   const EMPRESA = {
-    nombre: "Masterson Seguridad",
+    nombre: "Java Security",
     subtitulo: "Virtual Group Uruguay",
     rut: "21.123.456-7",
     direccion: "Av. Ejemplo 1234, Maldonado, Uruguay",
@@ -460,8 +460,8 @@
     moneda: "UYU",
     validezDias: 30,
     iva: 22,
-    piePagina: "Masterson Seguridad | Virtual Group Uruguay | Documento confidencial",
-    firma: "Masterson Seguridad — Instalaciones y Servicios"
+    piePagina: "Java Security | Virtual Group Uruguay | Documento confidencial",
+    firma: "Java Security — Instalaciones y Servicios"
   };
  
   const COLOR = {
@@ -485,7 +485,7 @@
   function generarNumeroPresupuesto(){
     const year = new Date().getFullYear();
     const random = String(Math.floor(1 + Math.random() * 999)).padStart(3, '0');
-    return `MAST-${year}-${random}`;
+    return `JS-${year}-${random}`;
   }
  
   function formatFechaHoy(){
@@ -710,16 +710,41 @@
   });
  
   /* =====================================================================
-     TODO: la vista previa podría reutilizar construirDocumentoPDF() y
-     abrir el resultado con doc.output('dataurlnewwindow') en lugar de
-     descargarlo directamente.
+     LOGO: se reutiliza el mismo archivo del header de la app dentro del PDF.
+     Se carga como imagen y se convierte a data URL (canvas) porque jsPDF
+     necesita los bytes de la imagen, no una ruta de archivo.
   ===================================================================== */
-  $('btnPreview').addEventListener('click', () => {
+  const LOGO_URL = './assets/JAVAd1556956-80fe-4124-89e2-f963670c8e0c.png';
+  let logoDataUrlCache = null;
+ 
+  function cargarLogoDataURL(url){
+    if(logoDataUrlCache) return Promise.resolve(logoDataUrlCache);
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try{
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          logoDataUrlCache = canvas.toDataURL('image/png');
+          resolve(logoDataUrlCache);
+        }catch(err){
+          reject(err);
+        }
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+ 
+  $('btnPreview').addEventListener('click', async () => {
     if(state.items.length === 0){
       mostrarToast('Agregá al menos un ítem');
       return;
     }
-    const doc = construirDocumentoPDF();
+    const doc = await construirDocumentoPDF();
     doc.output('dataurlnewwindow');
   });
  
@@ -729,13 +754,20 @@
      subir el blob resultante a Storage, ej:
      const blob = doc.output('blob'); storageRef.child(`presupuestos/${state.folio}.pdf`).put(blob)
   ===================================================================== */
-  function construirDocumentoPDF(){
+  async function construirDocumentoPDF(){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 40;
     let y = 0;
+ 
+    let logoDataUrl = null;
+    try{
+      logoDataUrl = await cargarLogoDataURL(LOGO_URL);
+    }catch(err){
+      console.warn('No se pudo cargar el logo para el PDF:', err);
+    }
  
     /* ---- Encabezado ---- */
     doc.setFillColor(...COLOR.azulOscuro);
@@ -744,13 +776,23 @@
     doc.setLineWidth(2);
     doc.line(0, 70, pageWidth, 70);
  
+    const textoX = logoDataUrl ? margin + 50 : margin;
+ 
+    if(logoDataUrl){
+      try{
+        doc.addImage(logoDataUrl, 'PNG', margin, 14, 40, 40);
+      }catch(err){
+        console.warn('No se pudo dibujar el logo en el PDF:', err);
+      }
+    }
+ 
     doc.setTextColor(...COLOR.blanco);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(17);
-    doc.text(EMPRESA.nombre.toUpperCase(), margin, 32);
+    doc.text(EMPRESA.nombre.toUpperCase(), textoX, 32);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.text(EMPRESA.subtitulo, margin, 48);
+    doc.text(EMPRESA.subtitulo, textoX, 48);
  
     doc.setTextColor(...COLOR.dorado);
     doc.setFont('helvetica', 'bold');
@@ -903,7 +945,7 @@
     return doc;
   }
  
-  $('btnPDF').addEventListener('click', () => {
+  $('btnPDF').addEventListener('click', async () => {
     if(state.items.length === 0){
       mostrarToast('Agregá al menos un ítem antes de generar el PDF');
       return;
@@ -913,19 +955,17 @@
     btnLabel.textContent = 'Generando…';
     $('btnPDF').disabled = true;
  
-    setTimeout(() => {
-      try{
-        const doc = construirDocumentoPDF();
-        doc.save(`Presupuesto_${state.folio}.pdf`);
-        mostrarToast('PDF descargado');
-      }catch(err){
-        console.error(err);
-        mostrarToast('No se pudo generar el PDF');
-      }finally{
-        btnLabel.textContent = original;
-        $('btnPDF').disabled = false;
-      }
-    }, 150);
+    try{
+      const doc = await construirDocumentoPDF();
+      doc.save(`Presupuesto_${state.folio}.pdf`);
+      mostrarToast('PDF descargado');
+    }catch(err){
+      console.error(err);
+      mostrarToast('No se pudo generar el PDF');
+    }finally{
+      btnLabel.textContent = original;
+      $('btnPDF').disabled = false;
+    }
   });
  
   /* ---- Init ---- */
