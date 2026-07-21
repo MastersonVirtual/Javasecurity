@@ -244,7 +244,12 @@
     font-size:13.5px;
     padding:18px 6px;
   }
- 
+
+  /* ---------- Totals card (en flujo) ---------- */
+  .totals-row{ display:flex; justify-content:space-between; align-items:center; font-size:14px; padding:6px 0; color:var(--text-dim); font-weight:500; }
+  .totals-row.total{ color:var(--text); font-size:19px; font-weight:800; border-top:1px solid var(--border); margin-top:6px; padding-top:14px; }
+  .totals-row.total span:last-child{ color:var(--btn); }
+  .totals-row span:last-child{ font-variant-numeric:tabular-nums; }
 
   /* ---------- Fixed bottom action bar ---------- */
   .action-bar{
@@ -387,6 +392,17 @@
         <textarea id="observaciones" placeholder="Observaciones adicionales (opcional)"></textarea>
       </div>
     </div>
+
+    <!-- ===================== COSTOS ===================== -->
+    <div class="section-label">Costos</div>
+    <div class="card">
+      <div class="field">
+        <label for="costoSinIva">Costo total sin IVA</label>
+        <input id="costoSinIva" type="number" min="0" step="1" placeholder="0">
+      </div>
+      <div class="totals-row"><span>IVA (<span id="ivaPct">22</span>%)</span><span id="ivaPreview">$0</span></div>
+      <div class="totals-row total"><span>Total</span><span id="totalPreview">$0</span></div>
+    </div>
  
     <!-- ===================== ITEMS ===================== -->
     <div class="section-label">Ítems del presupuesto</div>
@@ -510,6 +526,10 @@
   const folioBadge = $('folioBadge');
   const itemsList = $('itemsList');
   const emptyItemsMsg = $('emptyItemsMsg');
+  const costoSinIva = $('costoSinIva');
+  const ivaPreview = $('ivaPreview');
+  const totalPreview = $('totalPreview');
+  const ivaPctLabel = $('ivaPct');
 
   const modalOverlay = $('modalOverlay');
   const openModalBtn = $('openModalBtn');
@@ -526,6 +546,29 @@
   /* ---------- Datos automáticos (no se muestran en pantalla, se usan en el PDF) ---------- */
   function inicializarBadge(){
     folioBadge.textContent = `N° ${state.folio}`;
+    ivaPctLabel.textContent = EMPRESA.iva;
+  }
+
+  function formatMoneda(valor){
+    return `$${valor.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`;
+  }
+
+  function obtenerCostoSinIva(){
+    const valor = parseFloat(costoSinIva.value);
+    return Number.isFinite(valor) && valor > 0 ? valor : 0;
+  }
+
+  function calcularTotales(){
+    const subtotal = obtenerCostoSinIva();
+    const iva = subtotal * (EMPRESA.iva / 100);
+    const total = subtotal + iva;
+    return { subtotal, iva, total };
+  }
+
+  function actualizarTotales(){
+    const { iva, total } = calcularTotales();
+    ivaPreview.textContent = formatMoneda(iva);
+    totalPreview.textContent = formatMoneda(total);
   }
  
   /* ---------- Render de items ---------- */
@@ -586,6 +629,7 @@
   }
  
   openModalBtn.addEventListener('click', abrirModal);
+  costoSinIva.addEventListener('input', actualizarTotales);
  
   modalOverlay.addEventListener('click', (e) => {
     if(e.target === modalOverlay) cerrarModal();
@@ -650,6 +694,7 @@
       tipoTrabajo: $('tipoTrabajo').value,
       descripcion: $('descripcion').value.trim(),
       observaciones: $('observaciones').value.trim(),
+      costoSinIva: obtenerCostoSinIva(),
       items: state.items,
       guardadoEn: new Date().toISOString()
     };
@@ -677,7 +722,9 @@
     $('tipoTrabajo').value = borrador.tipoTrabajo || '';
     $('descripcion').value = borrador.descripcion || '';
     $('observaciones').value = borrador.observaciones || '';
+    costoSinIva.value = borrador.costoSinIva || '';
     inicializarBadge();
+    actualizarTotales();
     renderItems();
     cerrarBorradores();
     mostrarToast('Borrador cargado');
@@ -697,10 +744,11 @@
       card.className = 'draft-card';
       const titulo = borrador.cliente || borrador.folio || 'Presupuesto sin cliente';
       const fecha = borrador.guardadoEn ? new Date(borrador.guardadoEn).toLocaleString('es-UY') : 'Sin fecha';
+      const totalBorrador = Number(borrador.costoSinIva || 0);
       card.innerHTML = `
         <div class="draft-info">
           <div class="draft-title">${escapeHtml(titulo)}</div>
-          <div class="draft-meta">${escapeHtml(borrador.folio || 'Sin número')} · ${escapeHtml(fecha)}<br>${(borrador.items || []).length} ítem(s)</div>
+          <div class="draft-meta">${escapeHtml(borrador.folio || 'Sin número')} · ${escapeHtml(fecha)}<br>${(borrador.items || []).length} ítem(s) · Sin IVA: ${formatMoneda(totalBorrador)}</div>
         </div>
         <div class="draft-actions">
           <button class="icon-btn" data-action="load-draft" data-id="${borrador.folio}" type="button" aria-label="Cargar borrador">↩</button>
@@ -720,11 +768,27 @@
     draftsOverlay.classList.remove('open');
   }
 
+  function limpiarFormularioParaNuevo(){
+    state.folio = generarNumeroPresupuesto();
+    state.fecha = formatFechaHoy();
+    state.items = [];
+    $('cliente').value = '';
+    $('direccion').value = '';
+    $('tipoTrabajo').value = '';
+    $('descripcion').value = '';
+    $('observaciones').value = '';
+    costoSinIva.value = '';
+    inicializarBadge();
+    actualizarTotales();
+    renderItems();
+  }
+
   $('btnBorrador').addEventListener('click', () => {
     const borrador = obtenerDatosFormulario();
     const borradores = leerBorradores().filter(item => item.folio !== borrador.folio);
     borradores.unshift(borrador);
     guardarBorradores(borradores);
+    limpiarFormularioParaNuevo();
     mostrarToast('Borrador guardado');
   });
 
@@ -924,6 +988,42 @@
       });
       y += 12;
     }
+
+    /* ---- Resumen de costos ---- */
+    const { subtotal, iva, total } = calcularTotales();
+
+    doc.setTextColor(...COLOR.azulOscuro);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.text('RESUMEN DE COSTOS', margin, y);
+    y += 10;
+
+    doc.autoTable({
+      startY: y,
+      margin: { left: margin, right: margin },
+      head: [['Concepto', 'Monto']],
+      body: [
+        ['Costo total sin IVA', `${formatMoneda(subtotal)} ${EMPRESA.moneda}`],
+        [`IVA (${EMPRESA.iva}%)`, `${formatMoneda(iva)} ${EMPRESA.moneda}`]
+      ],
+      styles: { fontSize: 9.5, cellPadding: 7, textColor: COLOR.textoOscuro },
+      headStyles: { fillColor: COLOR.azulOscuro, textColor: COLOR.blanco, fontStyle: 'bold' },
+      columnStyles: { 1: { halign: 'right' } },
+      tableWidth: pageWidth - margin * 2
+    });
+
+    y = doc.lastAutoTable.finalY + 14;
+
+    doc.setDrawColor(...COLOR.dorado);
+    doc.setLineWidth(1.2);
+    doc.setFillColor(...COLOR.grisClaro);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 34, 4, 4, 'FD');
+    doc.setTextColor(...COLOR.azulOscuro);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('TOTAL (IVA incluido):', margin + 14, y + 22);
+    doc.setTextColor(...COLOR.dorado);
+    doc.text(`${formatMoneda(total)} ${EMPRESA.moneda}`, pageWidth - margin - 14, y + 22, { align: 'right' });
  
     /* ---- Pie de página ---- */
     doc.setFillColor(...COLOR.azulOscuro);
@@ -949,6 +1049,7 @@
     try{
       const doc = await construirDocumentoPDF();
       doc.save(`Presupuesto_${state.folio}.pdf`);
+      limpiarFormularioParaNuevo();
       mostrarToast('PDF descargado');
     }catch(err){
       console.error(err);
@@ -961,6 +1062,7 @@
  
   /* ---- Init ---- */
   inicializarBadge();
+  actualizarTotales();
   renderItems();
  
 })();
