@@ -98,6 +98,8 @@
     color:var(--text-dim);
     margin:10px 2px 0;
   }
+  .section-label.cost-label{ color:var(--btn); }
+  .section-label.items-label{ color:#c8d3f0; }
  
   .card{
     background:var(--card);
@@ -105,6 +107,14 @@
     padding:18px;
     border:1px solid var(--border);
     box-shadow:0 10px 30px -14px rgba(0,0,0,0.6);
+  }
+  .card.cost-card{
+    border-color:rgba(185,155,86,0.28);
+    background:linear-gradient(180deg, rgba(185,155,86,0.10), var(--card) 58%);
+  }
+  .card.items-card{
+    border-color:rgba(217,196,140,0.16);
+    background:linear-gradient(180deg, rgba(34,49,90,0.32), var(--card) 62%);
   }
  
   .field{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
@@ -394,8 +404,8 @@
     </div>
 
     <!-- ===================== COSTOS ===================== -->
-    <div class="section-label">Costos</div>
-    <div class="card">
+    <div class="section-label cost-label">Costos</div>
+    <div class="card cost-card">
       <div class="field">
         <label for="costoSinIva">Costo total sin IVA</label>
         <input id="costoSinIva" type="number" min="0" step="1" placeholder="0">
@@ -405,8 +415,8 @@
     </div>
  
     <!-- ===================== ITEMS ===================== -->
-    <div class="section-label">Ítems del presupuesto</div>
-    <div class="card">
+    <div class="section-label items-label">Ítems del presupuesto</div>
+    <div class="card items-card">
       <button class="add-item-btn" id="openModalBtn" type="button">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         Agregar ítem
@@ -867,18 +877,32 @@
       console.warn('No se pudo cargar el logo para el PDF:', err);
     }
  
+    function dibujarTituloSeccion(titulo, posY, opciones = {}){
+      const ancho = opciones.ancho || pageWidth - margin * 2;
+      doc.setFillColor(...(opciones.fondo || COLOR.azulOscuro));
+      doc.roundedRect(margin, posY, ancho, 24, 3, 3, 'F');
+      doc.setTextColor(...(opciones.texto || COLOR.blanco));
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(titulo, margin + 12, posY + 16);
+      return posY + 34;
+    }
+
     /* ---- Encabezado ---- */
     doc.setFillColor(...COLOR.azulOscuro);
-    doc.rect(0, 0, pageWidth, 70, 'F');
+    doc.rect(0, 0, pageWidth, 92, 'F');
+    doc.setFillColor(...COLOR.azulClaro);
+    doc.rect(0, 0, pageWidth, 4, 'F');
     doc.setDrawColor(...COLOR.dorado);
-    doc.setLineWidth(2);
-    doc.line(0, 70, pageWidth, 70);
+    doc.setLineWidth(2.4);
+    doc.line(0, 92, pageWidth, 92);
  
-    const textoX = logoDataUrl ? margin + 50 : margin;
+    const logoSize = 58;
+    const textoX = logoDataUrl ? margin + logoSize + 18 : margin;
  
     if(logoDataUrl){
       try{
-        doc.addImage(logoDataUrl, 'PNG', margin, 14, 40, 40);
+        doc.addImage(logoDataUrl, 'PNG', margin, 17, logoSize, logoSize);
       }catch(err){
         console.warn('No se pudo dibujar el logo en el PDF:', err);
       }
@@ -886,22 +910,27 @@
  
     doc.setTextColor(...COLOR.blanco);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(17);
-    doc.text(EMPRESA.nombre.toUpperCase(), textoX, 32);
+    doc.setFontSize(19);
+    doc.text(EMPRESA.nombre.toUpperCase(), textoX, 39);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(EMPRESA.subtitulo, textoX, 48);
+    doc.setFontSize(10.5);
+    doc.text(EMPRESA.subtitulo, textoX, 58);
  
     doc.setTextColor(...COLOR.dorado);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text('PRESUPUESTO', pageWidth - margin, 30, { align: 'right' });
+    doc.setFontSize(15);
+    doc.text('PRESUPUESTO', pageWidth - margin, 36, { align: 'right' });
     doc.setTextColor(...COLOR.blanco);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
-    doc.text(`Fecha: ${state.fecha}`, pageWidth - margin, 46, { align: 'right' });
+    doc.text(`Fecha: ${state.fecha}`, pageWidth - margin, 55, { align: 'right' });
+    doc.setDrawColor(...COLOR.dorado);
+    doc.roundedRect(pageWidth - margin - 128, 62, 128, 18, 4, 4);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(`N° ${state.folio}`, pageWidth - margin - 64, 74, { align: 'center' });
  
-    y = 96;
+    y = 120;
  
     /* ---- Tabla de datos generales ---- */
     const tipoTrabajoTexto = TIPO_TRABAJO_LABEL[$('tipoTrabajo').value] || '—';
@@ -911,8 +940,8 @@
     doc.autoTable({
       startY: y,
       margin: { left: margin, right: margin },
-      theme: 'plain',
-      styles: { fontSize: 9.5, cellPadding: 6, lineColor: [225, 222, 208], lineWidth: 0.5 },
+      theme: 'grid',
+      styles: { fontSize: 9.5, cellPadding: 8, lineColor: [225, 222, 208], lineWidth: 0.5, textColor: COLOR.textoOscuro },
       body: [
         [{ content: 'N° Presupuesto:', styles: { fontStyle: 'bold' } }, state.folio,
          { content: 'Vigencia:', styles: { fontStyle: 'bold' } }, `${EMPRESA.validezDias} días`],
@@ -925,7 +954,13 @@
         0: { cellWidth: 90 }, 1: { cellWidth: 155 },
         2: { cellWidth: 90 }, 3: { cellWidth: 'auto' }
       },
-      alternateRowStyles: { fillColor: COLOR.grisClaro }
+      alternateRowStyles: { fillColor: COLOR.grisClaro },
+      didParseCell: (data) => {
+        if(data.column.index === 0 || data.column.index === 2){
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.textColor = COLOR.azulOscuro;
+        }
+      }
     });
  
     y = doc.lastAutoTable.finalY + 22;
@@ -933,14 +968,7 @@
     /* ---- Descripción general (si existe) ---- */
     const descripcionTexto = $('descripcion').value.trim();
     if(descripcionTexto){
-      doc.setTextColor(...COLOR.azulOscuro);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text('DESCRIPCIÓN DEL TRABAJO', margin, y);
-      doc.setDrawColor(...COLOR.dorado);
-      doc.setLineWidth(1);
-      doc.line(margin, y + 5, pageWidth - margin, y + 5);
-      y += 20;
+      y = dibujarTituloSeccion('DESCRIPCIÓN DEL TRABAJO', y);
       doc.setTextColor(...COLOR.textoOscuro);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9.5);
@@ -955,16 +983,19 @@
       item.descripcion
     ]);
  
+    y = dibujarTituloSeccion('Ítems incluidos', y, { fondo: COLOR.azulClaro });
+
     doc.autoTable({
       startY: y,
       margin: { left: margin, right: margin },
-      head: [['Ítem', 'Descripción']],
+      head: [['#', 'Descripción del ítem']],
       body: filasItems,
-      styles: { fontSize: 9, cellPadding: 7, lineColor: [225, 222, 208], lineWidth: 0.5, textColor: COLOR.textoOscuro },
-      headStyles: { fillColor: COLOR.azulOscuro, textColor: COLOR.blanco, fontStyle: 'bold' },
+      styles: { fontSize: 9.3, cellPadding: 8, lineColor: [225, 222, 208], lineWidth: 0.45, textColor: COLOR.textoOscuro, valign: 'middle' },
+      headStyles: { fillColor: COLOR.azulClaro, textColor: COLOR.blanco, fontStyle: 'bold', fontSize: 9.5 },
       alternateRowStyles: { fillColor: COLOR.grisClaro },
       columnStyles: {
-        0: { cellWidth: 32, halign: 'center' }
+        0: { cellWidth: 36, halign: 'center', fontStyle: 'bold' },
+        1: { cellWidth: pageWidth - margin * 2 - 36 }
       }
     });
  
@@ -973,11 +1004,7 @@
     /* ---- Observaciones ---- */
     const observacionesTexto = $('observaciones').value.trim();
     if(observacionesTexto){
-      doc.setTextColor(...COLOR.azulOscuro);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10.5);
-      doc.text('OBSERVACIONES', margin, y);
-      y += 14;
+      y = dibujarTituloSeccion('OBSERVACIONES', y, { fondo: [245, 244, 238], texto: COLOR.azulOscuro });
       doc.setTextColor(...COLOR.textoOscuro);
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(9);
@@ -992,11 +1019,7 @@
     /* ---- Resumen de costos ---- */
     const { subtotal, iva, total } = calcularTotales();
 
-    doc.setTextColor(...COLOR.azulOscuro);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10.5);
-    doc.text('RESUMEN DE COSTOS', margin, y);
-    y += 10;
+    y = dibujarTituloSeccion('RESUMEN DE COSTOS', y, { fondo: COLOR.dorado, texto: COLOR.azulOscuro });
 
     doc.autoTable({
       startY: y,
@@ -1006,7 +1029,7 @@
         ['Costo total sin IVA', `${formatMoneda(subtotal)} ${EMPRESA.moneda}`],
         [`IVA (${EMPRESA.iva}%)`, `${formatMoneda(iva)} ${EMPRESA.moneda}`]
       ],
-      styles: { fontSize: 9.5, cellPadding: 7, textColor: COLOR.textoOscuro },
+      styles: { fontSize: 9.5, cellPadding: 8, textColor: COLOR.textoOscuro, lineColor: [232, 226, 209], lineWidth: 0.35 },
       headStyles: { fillColor: COLOR.azulOscuro, textColor: COLOR.blanco, fontStyle: 'bold' },
       columnStyles: { 1: { halign: 'right' } },
       tableWidth: pageWidth - margin * 2
@@ -1017,15 +1040,18 @@
     doc.setDrawColor(...COLOR.dorado);
     doc.setLineWidth(1.2);
     doc.setFillColor(...COLOR.grisClaro);
-    doc.roundedRect(margin, y, pageWidth - margin * 2, 34, 4, 4, 'FD');
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 42, 6, 6, 'FD');
     doc.setTextColor(...COLOR.azulOscuro);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text('TOTAL (IVA incluido):', margin + 14, y + 22);
+    doc.text('TOTAL (IVA incluido):', margin + 16, y + 26);
     doc.setTextColor(...COLOR.dorado);
-    doc.text(`${formatMoneda(total)} ${EMPRESA.moneda}`, pageWidth - margin - 14, y + 22, { align: 'right' });
+    doc.text(`${formatMoneda(total)} ${EMPRESA.moneda}`, pageWidth - margin - 16, y + 26, { align: 'right' });
  
     /* ---- Pie de página ---- */
+    doc.setDrawColor(...COLOR.dorado);
+    doc.setLineWidth(1);
+    doc.line(margin, pageHeight - 42, pageWidth - margin, pageHeight - 42);
     doc.setFillColor(...COLOR.azulOscuro);
     doc.rect(0, pageHeight - 34, pageWidth, 34, 'F');
     doc.setTextColor(...COLOR.blanco);
